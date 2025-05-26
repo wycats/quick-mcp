@@ -8,7 +8,6 @@ import type { LogLayer } from 'loglayer';
 
 import type { ServerOptions } from './config.ts';
 import { serverStartupFailedError, getErrorStack } from './errors/index.ts';
-import { OperationStatistics } from './monitoring/index.ts';
 import type { OpenApiSpec } from './openapi.ts';
 import { createTransport } from './transport/index.ts';
 
@@ -26,7 +25,6 @@ export class QuickMcpServer {
   // Private class properties
   readonly #server: McpServer;
   readonly #state: QuickMcpServerState;
-  readonly #stats: OperationStatistics;
 
   /**
    * Create a new Quick-MCP server
@@ -41,8 +39,6 @@ export class QuickMcpServer {
       version,
     });
 
-    // Initialize statistics
-    this.#stats = new OperationStatistics(options.spec);
 
     // Log startup configuration for debugging
     this.#state.app.log.info('Quick-MCP starting with configuration:', JSON.stringify({
@@ -84,13 +80,10 @@ export class QuickMcpServer {
           this.#log.info('MCP proxy server started on standard I/O');
         }
 
-        // Log safety information about exposed tools
-        const { tools, resources } = this.#stats.getToolCounts();
-        this.#log.info(`Exposing ${tools} tools and ${resources} resources`);
-        
-        // Log safety summary
-        const safetyStats = this.#stats.getSafetyStats();
-        this.#log.info('Safety summary: ' + JSON.stringify(safetyStats));
+        // Log simple count of exposed tools
+        const tools = this.#state.spec.getTools();
+        const resources = this.#state.spec.getResources();
+        this.#log.info(`Exposing ${tools.length} tools and ${resources.length} resources`);
       });
     } catch (error) {
       const errorMessage = getErrorStack(error) ?? String(error);

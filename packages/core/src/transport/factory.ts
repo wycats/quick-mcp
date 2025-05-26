@@ -6,9 +6,8 @@ import type { TransportType } from '../config.ts';
 import { createTransportError } from '../errors/index.ts';
 
 import { HttpTransport } from './http.ts';
-import { StdioTransport } from './stdio.ts';
-
 import type { TransportAdapter, TransportOptions } from './index.ts';
+import { StdioTransport } from './stdio.ts';
 
 /**
  * Create a transport adapter based on the specified type
@@ -35,15 +34,3 @@ export function createTransport(type: TransportType, options: TransportOptions):
   }
 }
 
-/**
- * @deprecated Use createTransport() function instead
- */
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class TransportFactory {
-  /**
-   * @deprecated Use createTransport() function instead
-   */
-  static create(type: TransportType, options: TransportOptions): TransportAdapter {
-    return createTransport(type, options);
-  }
-}

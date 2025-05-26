@@ -1,6 +1,6 @@
 # Next Steps for Quick-MCP
 
-This document tracks the progress of transitioning Quick-MCP from proof-of-concept to production-ready library. It's structured for Claude Sonnet to continue the work efficiently.
+This document tracks the progress of transitioning Quick-MCP from proof-of-concept to production-ready library.
 
 ## Executive Summary
 
@@ -49,7 +49,7 @@ Quick-MCP has made significant progress since the initial analysis:
 - ❌ **Authentication**: Only basic header forwarding
 - ❌ **Production Hardening**: Missing connection pooling, proper logging
 
-## Priority Action Plan for Sonnet
+## Priority Action Plan
 
 ### 🎯 Immediate Priority: Test Coverage & Production Hardening
 
@@ -181,7 +181,7 @@ The codebase is well-organized but needs production hardening. Focus on these hi
    - Environment config
    ```
 
-## Quick Reference for Sonnet
+## Quick Reference
 
 ### File Locations
 
@@ -239,4 +239,4 @@ pnpm dev:demo         # Start demo API
 
 ---
 
-*Last updated: May 26, 2025 - Ready for Sonnet to continue Phase 2*
+*Last updated: May 26, 2025*
