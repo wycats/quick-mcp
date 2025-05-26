@@ -11,6 +11,7 @@ import { createConfigurationError, QuickMcpError } from './errors/index.ts';
 // Branded types for better type safety
 export type Port = Tagged<number, 'Port'>;
 export type SpecUrl = Tagged<string, 'SpecUrl'>;
+export type OperationId = Tagged<string, 'OperationId'>;
 
 /**
  * Validate port number is in valid range
@@ -114,4 +115,25 @@ export function filePathToUrl(filePath: string): SpecUrl {
     : `file://${process.cwd()}/${trimmed}`;
     
   return fileUrl as SpecUrl;
+}
+
+/**
+ * Create an operation ID branded type
+ */
+export function createOperationId(id: string): OperationId {
+  const trimmed = id.trim();
+  
+  if (!trimmed) {
+    throw createConfigurationError('Operation ID cannot be empty');
+  }
+  
+  // Basic validation - operation IDs should be alphanumeric with underscores, dashes, or dots
+  if (!/^[a-zA-Z0-9._-]+$/.test(trimmed)) {
+    throw createConfigurationError(
+      `Invalid operation ID: ${trimmed}. Must contain only letters, numbers, dots, dashes, or underscores.`,
+      { operationId: trimmed }
+    );
+  }
+  
+  return trimmed as OperationId;
 }

@@ -11,7 +11,6 @@ import { missingSpecError, createConfigurationError } from './errors/index.ts';
 import type { AppContext } from './logging.ts';
 import type { Port, SpecUrl } from './types.ts';
 import { validatePort, validateSpecUrl, getDefaultPort } from './types.ts';
-import { parseHeadersFromJSON } from './utils/headers.ts';
 
 export type TransportType = LiteralUnion<'http' | 'stdio', string>;
 export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
@@ -38,6 +37,7 @@ export interface ServerOptions {
   readonly headers: Headers;
   readonly transport: TransportType;
   readonly baseUrl?: string;
+  readonly requestTimeoutMs?: number;
 }
 
 /**
@@ -50,6 +50,7 @@ export interface ConfigOverrides {
   readonly headers?: Headers;
   readonly transport?: TransportType;
   readonly baseUrl?: string;
+  readonly requestTimeoutMs?: number;
 }
 
 /**
@@ -91,10 +92,18 @@ export function createServerConfig(
   // Add environment auth headers if present
   if (env.AUTH_HEADERS) {
     try {
-      const authHeaders = parseHeadersFromJSON(env.AUTH_HEADERS);
-      authHeaders.forEach((value, key) => {
+      // Parse JSON headers inline (simplified from utils/headers.ts)
+      const parsed = JSON.parse(env.AUTH_HEADERS);
+      if (typeof parsed !== 'object' || parsed === null) {
+        throw createConfigurationError('AUTH_HEADERS must be a JSON object');
+      }
+      
+      for (const [key, value] of Object.entries(parsed)) {
+        if (typeof value !== 'string') {
+          throw createConfigurationError(`Header value for "${key}" must be a string`);
+        }
         headers.set(key, value);
-      });
+      }
     } catch (error) {
       // Re-throw with better context from the simple error function
       throw error;

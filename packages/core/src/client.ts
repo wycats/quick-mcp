@@ -96,7 +96,30 @@ export async function executeRequest(
   operation: QuickMcpOperation,
   app: { log: LogLayer },
   args: z.objectOutputType<z.ZodRawShape, z.ZodTypeAny>,
+  timeoutMs = 30000, // Default 30 second timeout
 ): Promise<Response> {
   const request = buildRequest(app, operation, args);
-  return fetch(request);
+  
+  // Create an AbortController for timeout handling
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+  
+  try {
+    const response = await fetch(request, {
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timed out after ${timeoutMs}ms`);
+    }
+    
+    throw error;
+  }
 }

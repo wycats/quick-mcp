@@ -8,6 +8,8 @@ import { bucketArgs } from '../request/request-utils.ts';
 import type { BucketedArgs, JsonObject } from '../request/request-utils.ts';
 import { HttpVerb } from '../safety.ts';
 import { ResponseSchemaExtractor } from '../schema/response-schema.ts';
+import type { OperationId } from '../types.ts';
+import { createOperationId } from '../types.ts';
 
 import { CustomExtensions } from './custom-extensions.ts';
 
@@ -109,8 +111,9 @@ export class QuickMcpOperation {
    * If the operation has an ID in `x-quick-mcp:id`, that will be returned.
    * Otherwise, the `operationId` from the OpenAPI document will be used.
    */
-  get id(): string {
-    return this.extensions.id ?? this.inner.getOperationId({ friendlyCase: true });
+  get id(): OperationId {
+    const rawId = this.extensions.id ?? this.inner.getOperationId({ friendlyCase: true });
+    return createOperationId(rawId);
   }
 
   get path(): string {

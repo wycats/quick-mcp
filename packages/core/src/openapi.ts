@@ -146,7 +146,7 @@ export class OpenApiSpec {
       );
 
       if (parameterSchemas) {
-        // Create tool with proper MCP SDK annotations
+        // Create tool with description, parameter schema, and annotations using the 5-parameter overload
         server.tool(
           client.op.id,
           client.op.description,
@@ -155,6 +155,7 @@ export class OpenApiSpec {
           action,
         );
       } else {
+        // Create tool with description and annotations only using the 4-parameter overload  
         server.tool(client.op.id, client.op.description, client.op.verb.hints, action);
       }
     }
