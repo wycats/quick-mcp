@@ -1,12 +1,12 @@
-# MCPify Roadmap
+# Quick-MCP Roadmap
 
-**Future features and strategic direction for MCPify**
+**Future features and strategic direction for Quick-MCP**
 
 > This document consolidates aspirational features from the original design documents into a realistic development roadmap.
 
 ## Current Status: Proof of Concept
 
-MCPify currently works as a basic OpenAPI-to-MCP proxy but requires significant development to reach production readiness. See [TODO.md](../TODO.md) for active work items.
+Quick-MCP currently works as a basic OpenAPI-to-MCP proxy but requires significant development to reach production readiness. See [TODO.md](../TODO.md) for active work items.
 
 ## Phase 1: Foundation (Q2 2025)
 
@@ -21,22 +21,22 @@ MCPify currently works as a basic OpenAPI-to-MCP proxy but requires significant 
 - [ ] **CLI Improvements**: Better error messages and validation
 - [ ] **Development Mode**: Watch mode with hot reload capabilities
 
-**Success Criteria**: MCPify works reliably for basic OpenAPI-to-MCP conversion with clear error reporting.
+**Success Criteria**: Quick-MCP works reliably for basic OpenAPI-to-MCP conversion with clear error reporting.
 
 ## Phase 2: Enhanced Functionality (Q3 2025)
 
 ### Advanced Features
 - [ ] **Schema Validation**: Runtime validation of OpenAPI responses
 - [ ] **Authentication**: Support for various auth methods (OAuth, API keys)
-- [ ] **Custom Extensions**: `x-mcpify` annotations for tool customization
+- [ ] **Custom Extensions**: `x-quick-mcp` annotations for tool customization
 - [ ] **Performance**: Request pooling, caching, and optimization
 
 ### Packaging & Distribution  
-- [ ] **NPM Package**: Public `@mcpify/core` package
+- [ ] **NPM Package**: Public `@quick-mcp/core` package
 - [ ] **Docker Support**: Official container images
 - [ ] **GitHub Repository**: Public repo with CI/CD pipeline
 
-**Success Criteria**: MCPify is packaged for easy installation and supports common enterprise requirements.
+**Success Criteria**: Quick-MCP is packaged for easy installation and supports common enterprise requirements.
 
 ## Phase 3: AI-Native Features (Q4 2025)
 
@@ -50,13 +50,13 @@ MCPify currently works as a basic OpenAPI-to-MCP proxy but requires significant 
 - [ ] **Schema Diff**: Compare OpenAPI versions and track changes
 - [ ] **Analytics**: Usage patterns and performance metrics
 
-**Success Criteria**: MCPify provides rich AI-native features that enhance tool discoverability and usage.
+**Success Criteria**: Quick-MCP provides rich AI-native features that enhance tool discoverability and usage.
 
 ## Phase 4: Ecosystem & Scale (2026)
 
 ### Platform Integrations
 - [ ] **Cloud Deployment**: AWS, Azure, GCP deployment templates
-- [ ] **MCP Marketplace**: Directory of MCPify-powered tools
+- [ ] **MCP Marketplace**: Directory of Quick-MCP-powered tools
 - [ ] **Enterprise Features**: Multi-tenancy, RBAC, audit logging
 
 ### Advanced Capabilities
@@ -64,13 +64,13 @@ MCPify currently works as a basic OpenAPI-to-MCP proxy but requires significant 
 - [ ] **Adaptive Learning**: Usage-based tool optimization
 - [ ] **Schema Evolution**: Automatic handling of API changes
 
-**Success Criteria**: MCPify becomes the standard for OpenAPI-to-MCP conversion in enterprise environments.
+**Success Criteria**: Quick-MCP becomes the standard for OpenAPI-to-MCP conversion in enterprise environments.
 
 ## Strategic Themes
 
 ### Developer-First Philosophy
 - **Zero Configuration**: Works out-of-the-box for common cases
-- **Incremental Adoption**: Add MCPify to existing APIs without changes
+- **Incremental Adoption**: Add Quick-MCP to existing APIs without changes
 - **Clear Documentation**: Examples, tutorials, and best practices
 
 ### Enterprise Ready

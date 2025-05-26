@@ -1,248 +1,242 @@
 # Next Steps for Quick-MCP
 
-This document provides a comprehensive analysis of the current codebase state and actionable recommendations for moving forward. It's designed to be implemented by Claude Sonnet or any other AI assistant.
+This document tracks the progress of transitioning Quick-MCP from proof-of-concept to production-ready library. It's structured for Claude Sonnet to continue the work efficiently.
 
 ## Executive Summary
 
-Quick-MCP (formerly MCPify) is a **proof-of-concept quality codebase** that successfully demonstrates OpenAPI-to-MCP conversion but lacks production readiness. The project suffers from:
+Quick-MCP has made significant progress since the initial analysis:
 
-1. **Aspirational documentation** describing features that don't exist
-2. **Incomplete refactoring** from exploration to production code
-3. **Fragmented documentation** with significant overlap and contradictions
-4. **Missing critical features** like proper error handling, transport layer testing, and monitoring
+**✅ Completed:**
 
-## Current State Analysis
+1. **Phase 1 Documentation consolidation** - All core docs created and outdated content archived
+2. **Complete branding migration** - No remaining MCPify references in active code
+3. **Basic timeout implementation** - HTTP requests now have configurable 30-second timeout
+4. **Transport layer tests** - Basic test coverage added (was 0%)
 
-### What Works
-- ✅ Core OpenAPI parsing and MCP tool/resource generation
-- ✅ Basic HTTP request proxying with parameter mapping
-- ✅ Response transformation back to MCP format
-- ✅ Safety classification of operations
-- ✅ Basic custom extensions support (`x-quick-mcp`)
+**🔄 Current State:**
 
-### What's Missing or Broken
-- ❌ No published npm package (despite documentation claims)
-- ❌ No GitHub repository at documented URL
-- ❌ Transport layer completely untested (0% coverage)
-- ❌ No monitoring, stats, or observability
-- ❌ No proper error handling or retry logic
-- ❌ No authentication beyond header forwarding
-- ❌ No debug UI or development tools
-- ❌ No Heroku integration (entire HEROKU.md is fiction)
+- **Test coverage**: 46.61% (target: 70%+)
+- **Architecture**: Core conversion works reliably, but lacks production hardening
+- **Documentation**: Honest and accurate, with clear roadmap
+- **Error handling**: Basic implementation, needs consistency
 
-### Documentation Issues
-- 📄 11 overlapping Windsurf rule files
-- 📄 Multiple TODO documents with completed items
-- 📄 Aspirational features presented as implemented
-- 📄 Branding inconsistency (MCPify vs Quick-MCP)
-- 📄 No clear distinction between roadmap and reality
+## Recent Improvements (Completed in Previous Session)
 
-## Recommended Action Plan
+### Phase 1: Documentation ✅ COMPLETE
 
-### Phase 1: Documentation Reality Check (1-2 days)
+- Created honest README.md reflecting actual capabilities
+- Consolidated 11 Windsurf rules into CONTRIBUTING.md
+- Created comprehensive ARCHITECTURE.md and API.md
+- Established DEVELOPMENT_PRACTICES.md for AI-assisted development
+- Archived all aspirational/outdated documentation to `.archive/`
+- Created single TODO.md as source of truth
 
-1. **Create honest README.md**
-   ```markdown
-   # Quick-MCP
-   
-   **Status: Proof of Concept** - Not production ready
-   
-   Converts OpenAPI specifications to Model Context Protocol (MCP) tools.
-   
-   ## What Works
-   - Basic OpenAPI to MCP conversion
-   - Simple HTTP proxying
-   - Parameter mapping
-   
-   ## Roadmap
-   - [ ] Publish npm package
-   - [ ] Add comprehensive error handling
-   - [ ] Test transport layers
-   - [ ] Add monitoring/observability
-   ```
+### Code Improvements ✅
 
-2. **Consolidate documentation structure**
-   ```
-   README.md                 # Honest overview + quick start
-   CONTRIBUTING.md          # Development guide (merge all Windsurf rules)
-   ARCHITECTURE.md          # System design and decisions
-   API.md                   # Public API reference
-   TESTING.md               # Testing philosophy and practices
-   TODO.md                  # Single source of active work items
-   
-   /docs/
-     roadmap.md            # Future features (move aspirational content here)
-     deployment.md         # Production deployment guide
-     examples/             # Usage examples
-   ```
+- **Branding**: Complete migration from MCPify to Quick-MCP
+- **HTTP Timeouts**: Added configurable timeout (default 30s) in client.ts
+- **Transport Tests**: Added basic test coverage for transport layer
+- **Type Safety**: Improved with TypeScript strict mode fixes
+- **Code Organization**: Refactored response handling into dedicated class
 
-3. **Archive outdated documents**
-   ```bash
-   mkdir .archive
-   mv HEROKU.md VIBE_CODING_*.md REFACTORING_*.md .archive/
-   mv .windsurf/rules/* .archive/windsurf-rules/
-   ```
+### What Still Needs Work
 
-### Phase 2: Code Consolidation (3-5 days)
+- ❌ **Test Coverage**: Currently at 46.61% (need 70%+)
+- ❌ **Error Handling**: Inconsistent error boundaries and retry logic
+- ❌ **npm Package**: Not published yet
+- ❌ **GitHub Repository**: Not created at documented URL
+- ❌ **Monitoring**: No observability or health checks
+- ❌ **Authentication**: Only basic header forwarding
+- ❌ **Production Hardening**: Missing connection pooling, proper logging
 
-1. **Complete the branding migration**
-   ```bash
-   # Remaining mcpify references to update:
-   - Package name in package.json files
-   - Import paths using @mcpify
-   - Documentation references
-   - Test file names and descriptions
-   ```
+## Priority Action Plan for Sonnet
 
-2. **Remove dead code and unused features**
+### 🎯 Immediate Priority: Test Coverage & Production Hardening
+
+The codebase is well-organized but needs production hardening. Focus on these high-impact tasks:
+
+### Phase 2A: Critical Test Coverage (1-2 days)
+
+1. **Expand Transport Layer Tests** (current coverage insufficient)
+
    ```typescript
-   // Delete or implement:
-   - Monitoring/stats collection (currently 0% coverage)
-   - Transport factory pattern (over-engineered, untested)
-   - Legacy QuickMCP class (deprecated but still exported)
-   - Unused configuration options
+   // Priority test scenarios for packages/core/src/transport/:
+   - Error handling in stdio transport
+   - Connection failures and reconnection
+   - Message parsing edge cases
+   - Concurrent request handling
    ```
 
-3. **Fix critical gaps**
+2. **Add Integration Tests**
+
    ```typescript
-   // Priority implementations:
-   - Error boundary around OpenAPI fetch with retry
-   - Timeout handling for HTTP requests  
-   - Basic request/response logging
-   - Transport layer tests (currently 0%)
-   - CLI tests (currently 0%)
+   // Create tests/ for end-to-end scenarios:
+   - Full OpenAPI → MCP → HTTP → Response flow
+   - Authentication header forwarding
+   - Error propagation through layers
+   - Schema validation failures
    ```
 
-### Phase 3: Testing and Quality (2-3 days)
+3. **Test Critical Paths**
+   - Operation client error scenarios
+   - Request builder edge cases (missing params, invalid types)
+   - Response handler malformed data
 
-1. **Add missing test coverage**
+### Phase 2B: Error Handling & Resilience (2-3 days)
+
+1. **Implement Proper Error Hierarchy**
+
    ```typescript
-   // Critical test gaps:
-   - Transport layer (stdio and http)
-   - Error conditions and edge cases
-   - CLI functionality
-   - Configuration management
-   - Full integration tests
-   ```
-
-2. **Implement error handling strategy**
-   ```typescript
-   // Consistent approach:
-   - Use Result<T, E> pattern or throw QuickMcpError
-   - Add error context at boundaries
-   - Log errors with appropriate levels
-   - Return meaningful error messages to MCP clients
-   ```
-
-3. **Add basic monitoring**
-   ```typescript
-   // Minimal observability:
-   - Request/response counts by operation
-   - Error rates and types
-   - Response time histograms
-   - Basic health check endpoint
-   ```
-
-### Phase 4: Production Readiness (3-5 days)
-
-1. **Create actual npm package**
-   ```json
-   // package.json updates:
-   {
-     "name": "@quick-mcp/core",
-     "version": "0.1.0",
-     "description": "Convert OpenAPI to MCP tools",
-     "keywords": ["mcp", "openapi", "llm", "tools"],
-     "repository": "github:yourusername/quick-mcp",
-     "bugs": "https://github.com/yourusername/quick-mcp/issues"
+   // Create consistent error types (see ARCHITECTURE.md):
+   class QuickMcpError extends Error {
+     constructor(message: string, public code: string, public details?: unknown) {}
    }
+   
+   class ConfigurationError extends QuickMcpError {} // Invalid config
+   class OpenApiError extends QuickMcpError {}       // Schema parsing failures  
+   class TransportError extends QuickMcpError {}     // Connection issues
+   class OperationError extends QuickMcpError {}     // Tool execution failures
    ```
 
-2. **Set up GitHub repository**
-   - Create public repo at documented URL
-   - Set up GitHub Actions for CI/CD
-   - Add issue templates
-   - Configure automatic releases
+2. **Add Retry Logic**
 
-3. **Write deployment documentation**
-   - Docker container setup
-   - Environment configuration
-   - Production best practices
-   - Monitoring setup
-
-## Documentation Consolidation Strategy
-
-### Converting to General-Purpose Documentation
-
-1. **Remove AI-specific prescriptions**
-   - Keep standards focused on outcomes, not process
-   - Remove Claude/Windsurf specific instructions
-   - Focus on code quality metrics
-
-2. **Create CONTRIBUTING.md from Windsurf rules**
-   ```markdown
-   # Contributing to Quick-MCP
-   
-   ## Code Standards
-   [Merge content from multiple rule files]
-   
-   ## Testing Requirements  
-   [Consolidate testing guidance]
-   
-   ## Pull Request Process
-   [Git workflow from existing docs]
+   ```typescript
+   // Implement exponential backoff for:
+   - OpenAPI spec fetching (network failures)
+   - HTTP API calls (transient 5xx errors)
+   - Transport reconnection attempts
    ```
 
-3. **Windsurf Rules Generation Prompt**
-   
-   For projects wanting to generate Windsurf rules from documentation:
-   
-   ```
-   Given the following repository documentation, create Windsurf rules that:
-   1. Extract code standards from CONTRIBUTING.md
-   2. Convert testing requirements to checkable rules
-   3. Translate architectural decisions to constraints
-   4. Focus on outcomes rather than process
-   
-   Documentation to convert:
-   [Paste CONTRIBUTING.md, ARCHITECTURE.md, TESTING.md]
-   
-   Output format: Create separate .md files for each concern area.
+3. **Production Logging**
+
+   ```typescript
+   // Replace console.log with proper logger:
+   - Structured logging with levels (debug/info/warn/error)
+   - Request/response correlation IDs
+   - Performance metrics (operation duration)
+   - Error context capture
    ```
 
-## Immediate Priority Actions
+### Phase 3: Production Features (3-4 days)
 
-1. **Fix the demo setup** ✅ (Already completed)
-2. **Update README with honest status** 
-3. **Complete branding to Quick-MCP**
-4. **Add timeout to HTTP requests**
-5. **Test the transport layer**
-6. **Consolidate documentation to 5-6 files**
-7. **Delete aspirational feature docs**
-8. **Create single TODO.md**
+1. **Connection Pooling & Performance**
 
-## Success Metrics
+   ```typescript
+   // Optimize HTTP client:
+   - Keep-alive connections
+   - Connection pool per base URL
+   - Request queuing and concurrency limits
+   - Response caching for idempotent operations
+   ```
 
-- [ ] 70%+ test coverage (currently 44%)
-- [ ] All transport layers tested
-- [ ] Documentation matches reality
-- [ ] npm package published
-- [ ] GitHub repo created
-- [ ] No "vibe coding" artifacts remain
-- [ ] Clear separation of working features vs roadmap
+2. **Authentication Enhancements**
 
-## Long-term Vision
+   ```typescript
+   // Support OpenAPI security schemes:
+   - Bearer token injection
+   - API key handling (header/query)
+   - OAuth2 flow support (future)
+   - Credential management best practices
+   ```
 
-Quick-MCP should become a **production-ready library** that:
-- Reliably converts OpenAPI specs to MCP tools
-- Handles errors gracefully with proper logging
-- Supports common authentication patterns
-- Provides debugging and monitoring capabilities
-- Has comprehensive documentation and examples
-- Maintains backward compatibility
+3. **Monitoring & Observability**
 
-The current proof-of-concept successfully validates the idea. Now it needs the engineering rigor to become a dependable tool that developers can trust in production environments.
+   ```typescript
+   // Production metrics:
+   - Prometheus-compatible metrics endpoint
+   - Health check: /health (transport status, spec loading)
+   - OpenTelemetry integration hooks
+   - Debug mode with request/response logging
+   ```
+
+### Phase 4: Package & Deploy (2-3 days)
+
+1. **Prepare npm Package**
+
+   ```bash
+   # Update package.json:
+   - Set version to 0.1.0-beta.1
+   - Add proper exports and types
+   - Include necessary files (dist/, types/)
+   - Add prepublishOnly scripts
+   ```
+
+2. **GitHub Repository Setup**
+
+   ```yaml
+   # Create .github/workflows/ci.yml:
+   - Run tests on PR
+   - Check coverage thresholds
+   - Lint and type checking
+   - Publish to npm on release
+   ```
+
+3. **Docker Support**
+
+   ```dockerfile
+   # Production Dockerfile:
+   - Multi-stage build
+   - Non-root user
+   - Health check endpoint
+   - Environment config
+   ```
+
+## Quick Reference for Sonnet
+
+### File Locations
+
+- **Core library**: `packages/core/src/`
+- **Transport layer**: `packages/core/src/transport/`
+- **Tests**: `packages/core/src/**/*.test.ts` and `tests/`
+- **Demo API**: `packages/demo/`
+
+### Key Commands
+
+```bash
+pnpm test              # Run tests
+pnpm test:coverage     # Check coverage (currently 46.61%)
+pnpm lint             # Run ESLint
+pnpm dev              # Start Quick-MCP
+pnpm dev:demo         # Start demo API
+```
+
+### Critical Files to Review
+
+1. `packages/core/src/client.ts` - Has timeout, needs error handling
+2. `packages/core/src/transport/stdio.ts` - Needs tests
+3. `packages/core/src/operation/client.ts` - Core logic, needs resilience
+4. `TODO.md` - Active work items with priorities
+
+## Success Criteria
+
+**Phase 2 Complete When:**
+
+- [ ] Test coverage > 60%
+- [ ] All transport types have basic tests
+- [ ] Error hierarchy implemented
+- [ ] Retry logic for network requests
+
+**Phase 3 Complete When:**
+
+- [ ] Test coverage > 70%
+- [ ] Connection pooling implemented
+- [ ] Basic monitoring endpoint works
+- [ ] Authentication improvements done
+
+**Phase 4 Complete When:**
+
+- [ ] npm package published as beta
+- [ ] GitHub repo with CI/CD
+- [ ] Docker image available
+- [ ] Production docs complete
+
+## Notes for Implementation
+
+1. **Test First**: Write tests before implementing features
+2. **Small PRs**: Keep changes focused and reviewable
+3. **Check TODO.md**: It has the most current priority list
+4. **Use ARCHITECTURE.md**: Follow established patterns
 
 ---
 
-*This is a temporary analysis document. Once the recommended documentation structure is implemented, this file should be archived.*
+*Last updated: May 26, 2025 - Ready for Sonnet to continue Phase 2*

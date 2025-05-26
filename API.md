@@ -1,17 +1,17 @@
 # API Reference
 
-**Public API for MCPify Core**
+**Public API for Quick-MCP Core**
 
-> This documents the stable public interface exported by `@mcpify/core`. Internal implementation details may change without notice.
+> This documents the stable public interface exported by `@quick-mcp/core`. Internal implementation details may change without notice.
 
 ## Factory Functions
 
 ### `createServer(options: ServerOptions): Promise<QuickMcpServer>`
 
-Creates a new MCPify server instance from configuration options.
+Creates a new Quick-MCP server instance from configuration options.
 
 ```typescript
-import { createServer } from '@mcpify/core';
+import { createServer } from '@quick-mcp/core';
 
 const server = await createServer({
   spec: 'https://api.example.com/openapi.json',
@@ -35,7 +35,7 @@ const server = await createServer({
 Creates server using environment variables with optional overrides.
 
 ```typescript
-import { createServerFromEnvironment } from '@mcpify/core';
+import { createServerFromEnvironment } from '@quick-mcp/core';
 
 // Uses OPENAPI_SPEC_URL, TRANSPORT, PORT from environment
 const server = await createServerFromEnvironment();
@@ -89,7 +89,7 @@ console.log(server.stats); // Operation statistics
 OpenAPI specification loader and parser.
 
 ```typescript
-import { OpenApiSpec } from '@mcpify/core';
+import { OpenApiSpec } from '@quick-mcp/core';
 
 const spec = await OpenApiSpec.load('https://api.example.com/openapi.json');
 
@@ -193,7 +193,7 @@ import {
   OpenApiError, 
   TransportError, 
   ServerError 
-} from '@mcpify/core';
+} from '@quick-mcp/core';
 
 try {
   const server = await createServer(invalidOptions);
@@ -218,7 +218,7 @@ try {
 ### Basic HTTP Server
 
 ```typescript
-import { createServer } from '@mcpify/core';
+import { createServer } from '@quick-mcp/core';
 
 const server = await createServer({
   spec: 'https://petstore.swagger.io/v2/swagger.json',
@@ -227,13 +227,13 @@ const server = await createServer({
 });
 
 await server.connect();
-console.log(`MCPify server running at ${server.url}`);
+console.log(`Quick-MCP server running at ${server.url}`);
 ```
 
 ### Stdio Transport (for MCP clients)
 
 ```typescript
-import { createServer } from '@mcpify/core';
+import { createServer } from '@quick-mcp/core';
 
 const server = await createServer({
   spec: './api-spec.yaml',
@@ -247,7 +247,7 @@ await server.connect();
 ### With Authentication
 
 ```typescript
-import { createServerFromEnvironment } from '@mcpify/core';
+import { createServerFromEnvironment } from '@quick-mcp/core';
 
 // Set environment variables:
 // OPENAPI_SPEC_URL=https://api.example.com/openapi.json
@@ -262,12 +262,12 @@ await server.connect();
 ### Custom Headers
 
 ```typescript
-import { createServer } from '@mcpify/core';
+import { createServer } from '@quick-mcp/core';
 
 const headers = new Headers([
   ['Authorization', 'Bearer token'],
   ['X-API-Key', 'api-key-value'],
-  ['User-Agent', 'MCPify/1.0']
+  ['User-Agent', 'Quick-MCP/1.0']
 ]);
 
 const server = await createServer({
@@ -289,11 +289,11 @@ const server = await createServer({
 
 ```typescript
 // OLD (deprecated)
-import { QuickMCP } from '@mcpify/core';
+import { QuickMCP } from '@quick-mcp/core';
 const server = await QuickMCP.load(options);
 
 // NEW (recommended)
-import { createServer } from '@mcpify/core';
+import { createServer } from '@quick-mcp/core';
 const server = await createServer(options);
 ```
 

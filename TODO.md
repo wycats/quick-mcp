@@ -1,6 +1,6 @@
 # TODO - Active Work Items
 
-**Status**: This is the single source of truth for active development tasks in MCPify.
+**Status**: This is the single source of truth for active development tasks in Quick-MCP.
 
 > **Note**: This consolidates work items from NEXT_STEPS.md, plan/, and other fragmented TODO documents into a prioritized action list.
 
@@ -56,7 +56,7 @@
 ## Phase 4: Production Readiness 🚀 FUTURE
 
 ### Packaging (P2)
-- [ ] **Create npm package**: `@mcpify/core` with proper exports
+- [ ] **Create npm package**: `@quick-mcp/core` with proper exports
 - [ ] **Set up GitHub repository**: Public repo with CI/CD pipeline
 - [ ] **Add Docker support**: Production-ready container setup
 
@@ -67,7 +67,7 @@
 
 ### Advanced Features (P3)
 - [ ] **Overlay system**: External metadata without modifying OpenAPI specs
-- [ ] **Watch mode**: `mcpify dev --watch` with hot reload
+- [ ] **Watch mode**: `quick-mcp dev --watch` with hot reload
 - [ ] **Web UI**: Browser-based tool explorer and debugger
 
 ## Work In Progress

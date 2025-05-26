@@ -35,3 +35,6 @@ chat-history.md
 **/chat-history.md
 conversation*.md
 **/conversation*.md
+
+# Ephemeral documentation (temporary strategy docs)
+docs/ephemeral/
