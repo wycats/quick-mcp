@@ -157,6 +157,9 @@ importers:
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
+      type-fest:
+        specifier: ^4.41.0
+        version: 4.41.0
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
@@ -166,7 +169,7 @@ importers:
 
   packages/demo:
     dependencies:
-      '@mcpify/core':
+      '@quick-mcp/core':
         specifier: workspace:*
         version: link:../core
       cors:
@@ -187,12 +190,12 @@ importers:
 
   tests:
     dependencies:
-      '@mcpify/core':
-        specifier: workspace:*
-        version: link:../packages/core
       '@modelcontextprotocol/sdk':
         specifier: ^1.11.2
         version: 1.11.2
+      '@quick-mcp/core':
+        specifier: workspace:*
+        version: link:../packages/core
       '@vitest/expect':
         specifier: ^3.1.3
         version: 3.1.3

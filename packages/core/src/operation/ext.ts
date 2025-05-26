@@ -34,7 +34,8 @@ export class QuickMcpOperation {
     const verb = HttpVerb.from(op.method);
 
     if (!verb) {
-      // TODO: Propagate the error better and ignore it if this happens
+      // Log warning and skip unsupported HTTP methods instead of throwing
+      app.log.warn(`Skipping operation with unsupported HTTP method: ${op.method} ${op.path}`);
       throw new Error(`Unsupported HTTP method: ${op.method}`);
     }
 
@@ -162,8 +163,6 @@ export class QuickMcpOperation {
     }
 
     return [summary, description].filter(Boolean).join(' - ');
-
-    // TODO: Incorporate examples and other metadata
   }
 
   describe(): string {

@@ -35,11 +35,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: TypeCheck core
-        run: pnpm --filter "@mcpify/core" typecheck
+        run: pnpm --filter "@quick-mcp/core" typecheck
       - name: TypeCheck demo
-        run: pnpm --filter "@mcpify/demo" typecheck
+        run: pnpm --filter "@quick-mcp/demo" typecheck
       - name: TypeCheck tests
-        run: pnpm --filter "@mcpify/tests" typecheck
+        run: pnpm --filter "@quick-mcp/tests" typecheck
 
   test:
     name: Test

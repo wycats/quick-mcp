@@ -5,7 +5,8 @@
  * based on OpenAPI specifications.
  */
 
-export { buildRequest, buildRequestInit } from './request-builder.ts';
+// Request building functions
+export { buildRequest, buildRequestParts } from './request-builder.ts';
 export {
   bucketArgs,
   createSearchParams,

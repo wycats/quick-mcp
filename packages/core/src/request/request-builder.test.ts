@@ -3,11 +3,11 @@ import { describe, it, expect, assert } from 'vitest';
 import { testApp } from '../test/create-oas.ts';
 import { createTestOp } from '../test/create-test-op.ts';
 
-import { buildRequestInit } from './request-builder.ts';
+import { buildRequestParts } from './request-builder.ts';
 import type { OasRequestArgs } from './url-utils.ts';
 
-describe('buildRequestInit', () => {
-  it('builds a RequestInit with correct method and URL for a simple GET request', () => {
+describe('buildRequestParts', () => {
+  it('builds request parts with correct method and URL for a simple GET request', () => {
     // Arrange
     const { app } = testApp();
     const { op } = createTestOp('get', { id: 'path' }, undefined, {
@@ -17,13 +17,11 @@ describe('buildRequestInit', () => {
     const args: OasRequestArgs = { id: '123' };
 
     // Act
-    const result = buildRequestInit({ app, op, args });
+    const result = buildRequestParts(app, op, args);
 
     // Assert
-    expect(result.init).toMatchObject({
-      method: 'GET',
-      body: null,
-    });
+    expect(result.init.method).toBe('GET');
+    expect(result.init.body).toBeNull();
 
     // Verify Headers directly - this ensures we're not using mocks
     // and checking real behavior without relying on implementation details
@@ -50,7 +48,7 @@ describe('buildRequestInit', () => {
     };
 
     // Act
-    const result = buildRequestInit({ app, op, args });
+    const result = buildRequestParts(app, op, args);
 
     // Assert
     expect(String(result.url)).toBe('https://api.example.com/api/test/123?filter=active');
@@ -70,7 +68,7 @@ describe('buildRequestInit', () => {
     };
 
     // Act
-    const result = buildRequestInit({ app, op, args });
+    const result = buildRequestParts(app, op, args);
 
     // Assert
     expect(result.init.method).toBe('POST');
@@ -100,7 +98,7 @@ describe('buildRequestInit', () => {
     };
 
     // Act
-    const result = buildRequestInit({ app, op, args });
+    const result = buildRequestParts(app, op, args);
 
     // Assert
     expect(result.init.method).toBe('POST');
@@ -137,7 +135,7 @@ describe('buildRequestInit', () => {
     };
 
     // Act
-    const result = buildRequestInit({ app, op, args });
+    const result = buildRequestParts(app, op, args);
 
     // Assert
     expect(result.init.method).toBe('POST');
@@ -166,7 +164,7 @@ describe('buildRequestInit', () => {
     };
 
     // Act
-    const result = buildRequestInit({ app, op, args });
+    const result = buildRequestParts(app, op, args);
 
     // Assert
     expect(result.url.toString()).toBe('https://api.example.com/api/users/user123/posts/post456');
@@ -185,7 +183,7 @@ describe('buildRequestInit', () => {
     };
 
     // Act
-    const result = buildRequestInit({ app, op, args });
+    const result = buildRequestParts(app, op, args);
 
     // Assert
     // The URL comes from the API server configuration in createTestOp
@@ -204,7 +202,7 @@ describe('buildRequestInit', () => {
     };
 
     // Act
-    const result = buildRequestInit({ app, op, args });
+    const result = buildRequestParts(app, op, args);
 
     // Assert
     expect(result.init.method).toBe('PUT');

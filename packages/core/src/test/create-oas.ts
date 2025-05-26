@@ -1,9 +1,9 @@
-import { TestLoggingLibrary, TestTransport } from 'loglayer';
-import type { LogLayer, LogLevel } from 'loglayer';
+import { LogLayer, TestLoggingLibrary, TestTransport } from 'loglayer';
+import type { LogLevel } from 'loglayer';
 import type Oas from 'oas';
 import type { OpenAPIV3 } from 'openapi-types';
 
-import { App } from '../main.ts';
+import type { AppContext } from '../logging.ts';
 import { parseSpec } from '../openapi.ts';
 
 /**
@@ -77,12 +77,13 @@ export function createTestLogger(): LogLayer {
 
 export type LogLevelString = keyof typeof LogLevel;
 
-export function testApp(): { app: App; test: TestLoggingLibrary } {
+export function testApp(): { app: AppContext; test: TestLoggingLibrary } {
   const test = new TestLoggingLibrary();
-  const log = new TestTransport({
+  const transport = new TestTransport({
     logger: test,
   });
-  const app = new App({ log });
+  const log = new LogLayer({ transport });
+  const app: AppContext = { log };
 
   return { app, test };
 }

@@ -1,3 +1,10 @@
+/**
+ * Request building utilities for Quick-MCP
+ * 
+ * This provides focused functions for building HTTP requests
+ * from OpenAPI operations and MCP tool arguments.
+ */
+
 import type { LogLayer } from 'loglayer';
 import { parseTemplate } from 'url-template';
 
@@ -9,187 +16,147 @@ import { getBaseUrl } from './url-utils.ts';
 import type { OasRequestArgs } from './url-utils.ts';
 
 /**
- * Configuration for building a request
- */
-interface RequestConfig {
-  /** Application context with logging */
-  app: { log: LogLayer };
-  /** Operation to build request for */
-  op: QuickMcpOperation;
-  /** Arguments for the operation */
-  args: OasRequestArgs;
-}
-
-/**
- * Intermediate result containing processed request parts
- */
-interface BuiltRequest {
-  /** Processed URL with query parameters */
-  url: URL;
-  /** Request initialization options */
-  init: RequestInit;
-}
-
-/**
- * Builds a standard Request object from OpenAPI operation and arguments.
- *
- * @param app - Application context with logging capabilities
- * @param op - Operation to build request for
- * @param args - Arguments for the operation
- * @returns Constructed Request object
+ * Build a complete Request object for an OpenAPI operation
+ * 
+ * This is the main function - it does everything needed to create
+ * a proper HTTP request without unnecessary layers.
  */
 export function buildRequest(
   app: { log: LogLayer },
   op: QuickMcpOperation,
   args: OasRequestArgs,
 ): Request {
-  const { init, url } = buildRequestInit({ app, op, args });
-  return new Request(url, init);
-}
+  app.log.trace('Building request with args', JSON.stringify(args, null, 2));
 
-/**
- * Builds RequestInit and URL objects for a Request from OpenAPI operation and arguments.
- * This is useful when you need more control over the request creation process.
- *
- * @param config - Configuration for building the request
- * @returns Object containing RequestInit and URL objects
- */
-export function buildRequestInit({ app, op, args }: RequestConfig): BuiltRequest {
-  app.log.trace('Specified args', JSON.stringify(args, null, 2));
-
+  // Convert args to organized buckets (path, query, body, etc.)
   const bucketed = op.bucketArgs(args as JsonObject);
-  app.log.trace('Using bucketed args', JSON.stringify(bucketed, null, 2));
+  app.log.trace('Bucketed args', JSON.stringify(bucketed, null, 2));
 
-  const url = buildUrl({ app, op, bucketed });
-  const init = buildRequestInitObject({ app, op, bucketed });
+  // Build the URL with path params and query string
+  const url = buildRequestUrl(app, op, bucketed);
+  
+  // Build the request body and determine content type
+  const { body, contentType } = buildRequestBody(app, bucketed);
+  
+  // Create headers
+  const headers = new Headers();
+  if (contentType) {
+    headers.set('Content-Type', contentType);
+  }
+  headers.set('Accept', op.responseType);
 
-  return { init, url };
+  // Create the final request
+  const request = new Request(url, {
+    method: op.verb.uppercase,
+    headers,
+    body: body ?? null,
+  });
+
+  app.log.debug(`Built request: ${request.method} ${request.url}`);
+  return request;
 }
 
 /**
- * Builds the URL for the request, including path parameters and query string
+ * Build the complete URL with path parameters and query string
  */
-function buildUrl({
-  app,
-  op,
-  bucketed,
-}: {
-  app: { log: LogLayer };
-  op: QuickMcpOperation;
-  bucketed: BucketedArgs;
-}): URL {
+function buildRequestUrl(
+  app: { log: LogLayer },
+  op: QuickMcpOperation,
+  bucketed: BucketedArgs
+): URL {
+  // Get base URL from OpenAPI spec
   const baseUrl = getBaseUrl(op.oas);
-  app.log.debug(`Base URL resolution result: ${baseUrl || '(empty)'}`);
+  app.log.debug(`Base URL: ${baseUrl}`);
 
-  app.log.trace(`Original operation path: ${op.path}`);
-  app.log.trace(`Operation method: ${op.verb.uppercase}`);
-  app.log.trace(`Operation ID: ${op.id}`);
-
+  // Expand path template with parameters
   const template = parseTemplate(op.path);
-  const templateParams = Object.fromEntries(
-    Object.entries(bucketed.path).map(([k, v]) => [k, String(v)]),
+  const pathParams = Object.fromEntries(
+    Object.entries(bucketed.path).map(([k, v]) => [k, String(v)])
   );
+  const expandedPath = template.expand(pathParams);
+  app.log.debug(`Expanded path: ${op.path} → ${expandedPath}`);
 
-  app.log.debug('Template parameters:', JSON.stringify(templateParams, null, 2));
-  const expandedPath = template.expand(templateParams);
-  app.log.debug(`Path after template expansion: ${expandedPath}`);
-
-  // Properly join baseUrl and path to ensure correct slash handling
-  const joinedPath = expandedPath.startsWith('/')
-    ? `${baseUrl}${expandedPath}`
-    : `${baseUrl}/${expandedPath}`;
-
-  app.log.debug(`Request path: ${joinedPath}`);
-  const url = new URL(joinedPath);
+  // Build the complete URL
+  const baseUrlObj = new URL(baseUrl);
+  const basePath = baseUrlObj.pathname.replace(/\/$/, '');
+  const normalizedPath = expandedPath.startsWith('/') ? expandedPath : `/${expandedPath}`;
+  baseUrlObj.pathname = `${basePath}${normalizedPath}`;
 
   // Add query parameters
   if (Object.keys(bucketed.query).length > 0) {
-    createSearchParams(bucketed.query, url.searchParams);
+    createSearchParams(bucketed.query, baseUrlObj.searchParams);
+    app.log.debug(`Added query params: ${Object.keys(bucketed.query).join(', ')}`);
   }
 
-  app.log.trace(
-    'Initial URL constructed',
-    JSON.stringify({ baseUrl, path: op.path, expandedPath, url: url.toString() }),
-  );
-
-  return url;
+  app.log.debug(`Final URL: ${baseUrlObj.toString()}`);
+  return baseUrlObj;
 }
 
 /**
- * Builds the RequestInit object with method, headers, and body
+ * Build the request body and determine appropriate content type
  */
-function buildRequestInitObject({
-  app,
-  op,
-  bucketed,
-}: {
-  app: { log: LogLayer };
-  op: QuickMcpOperation;
-  bucketed: BucketedArgs;
-}): RequestInit {
-  const { body: requestBody, contentType } = processRequestBody({ app, bucketed });
-  const headers = createHeaders({ op, contentType });
-
-  return {
-    method: op.verb.uppercase, // Always use uppercase HTTP methods for standard compliance
-    headers,
-    body: requestBody ?? null,
-  };
-}
-
-/**
- * Processes the request body and determines the content type
- */
-function processRequestBody({
-  app,
-  bucketed,
-}: {
-  app: { log: LogLayer };
-  bucketed: BucketedArgs;
-}): { body?: string | FormData; contentType: string | null } {
-  // Handle request body
+function buildRequestBody(
+  app: { log: LogLayer },
+  bucketed: BucketedArgs
+): { body?: string | FormData; contentType: string | null } {
+  // Direct body provided
   if (bucketed.body !== undefined) {
-    // If body is provided directly as a string
     if (typeof bucketed.body === 'string') {
       return { body: bucketed.body, contentType: 'text/plain' };
     }
-    // If body is an object, convert to JSON if appropriate
-    else if (bucketed.body !== null && typeof bucketed.body === 'object') {
+    if (bucketed.body !== null && typeof bucketed.body === 'object') {
       try {
-        return { body: JSON.stringify(bucketed.body), contentType: 'application/json' };
-      } catch (jsonError) {
-        app.log.debug('Error stringifying JSON body', String(jsonError));
+        return { 
+          body: JSON.stringify(bucketed.body), 
+          contentType: 'application/json' 
+        };
+      } catch (error) {
+        app.log.debug('Failed to serialize body as JSON', String(error));
       }
     }
   }
-  // Handle form data
-  else if (bucketed.formData) {
-    const body =
-      bucketed.formData instanceof URLSearchParams
-        ? bucketed.formData.toString()
-        : bucketed.formData;
-    return { body, contentType: 'application/x-www-form-urlencoded' };
+
+  // Form data
+  if (bucketed.formData) {
+    const body = bucketed.formData instanceof URLSearchParams
+      ? bucketed.formData.toString()
+      : bucketed.formData;
+    return { 
+      body, 
+      contentType: 'application/x-www-form-urlencoded' 
+    };
   }
 
+  // No body
   return { contentType: null };
 }
 
 /**
- * Creates headers for the request, including content type and accept headers
+ * Alternative API: Build RequestInit + URL separately (for advanced use cases)
+ * 
+ * This is useful if you need more control over request creation,
+ * but most code should use buildRequest() instead.
  */
-function createHeaders({
-  op,
-  contentType,
-}: {
-  op: QuickMcpOperation;
-  contentType: string | null;
-}): Headers {
+export function buildRequestParts(
+  app: { log: LogLayer },
+  op: QuickMcpOperation,
+  args: OasRequestArgs,
+): { url: URL; init: RequestInit } {
+  const bucketed = op.bucketArgs(args as JsonObject);
+  const url = buildRequestUrl(app, op, bucketed);
+  const { body, contentType } = buildRequestBody(app, bucketed);
+  
   const headers = new Headers();
-
   if (contentType) {
     headers.set('Content-Type', contentType);
   }
-
   headers.set('Accept', op.responseType);
-  return headers;
+
+  const init: RequestInit = {
+    method: op.verb.uppercase,
+    headers,
+    body: body ?? null,
+  };
+
+  return { url, init };
 }

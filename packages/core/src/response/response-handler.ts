@@ -4,6 +4,15 @@ import type { Operation } from 'oas/operation';
 
 import type { QuickMcpOperation } from '../operation/ext.ts';
 
+// HTTP Status code constants
+const HTTP_ERROR_THRESHOLD = 400;
+const HTTP_SUCCESS_OK = 200;
+
+// Content type constants
+const CONTENT_TYPE_JSON = 'application/json';
+const CONTENT_TYPE_TEXT = 'text/plain';
+const CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded';
+
 /**
  * Types of content that can be returned in a tool response
  */
@@ -56,7 +65,7 @@ export async function handleToolResponse(
   log: LogLayer,
   operation: QuickMcpOperation,
 ): Promise<CallToolResult> {
-  if (response.status >= 400) {
+  if (response.status >= HTTP_ERROR_THRESHOLD) {
     return createToolError(response, log, operation);
   }
 
@@ -119,10 +128,10 @@ export async function handleResourceResponse(
   operation: QuickMcpOperation,
 ): Promise<ReadResourceResult> {
   const uri = response.url;
-  const mime = response.headers.get('Content-Type') ?? 'text/plain';
+  const mime = response.headers.get('Content-Type') ?? CONTENT_TYPE_TEXT;
 
   // Handle error responses
-  if (response.status >= 400) {
+  if (response.status >= HTTP_ERROR_THRESHOLD) {
     const errorText = await response.text();
     log.warn(`Error response from ${operation.describe()}:`, errorText);
     return createResourceError(uri, mime, errorText);
@@ -134,7 +143,7 @@ export async function handleResourceResponse(
     return createTextResource(uri, mime, text);
   } else {
     const data = await response.arrayBuffer();
-    const binaryMime = mime === 'text/plain' ? 'application/octet-stream' : mime;
+    const binaryMime = mime === CONTENT_TYPE_TEXT ? 'application/octet-stream' : mime;
     return createBinaryResource(uri, binaryMime, data);
   }
 }
@@ -144,7 +153,7 @@ export async function handleResourceResponse(
  */
 export function isText(op: Operation): boolean {
   try {
-    const schema = op.getResponseAsJSONSchema(200);
+    const schema = op.getResponseAsJSONSchema(HTTP_SUCCESS_OK);
     // If schema exists and has 'binary' format, it's not text
     // Otherwise, return true (default to text)
     return schema.format !== 'binary';
@@ -194,11 +203,17 @@ function createResourceContent(options: ResponseContentOptions): CallToolResult 
  */
 async function extractResponseContent(response: Response, mimeType: string): Promise<string> {
   switch (mimeType) {
-    case 'application/json': {
-      const json = await response.json();
-      return JSON.stringify(json);
+    case CONTENT_TYPE_JSON: {
+      try {
+        const text = await response.text();
+        // Validate that it's valid JSON by parsing it
+        JSON.parse(text);
+        return text;
+      } catch (error) {
+        throw new Error(`Failed to parse JSON response: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     }
-    case 'application/x-www-form-urlencoded': {
+    case CONTENT_TYPE_FORM_URLENCODED: {
       const formData = await response.formData();
       const search = new URLSearchParams(Object.entries(formData));
       return String(search);
@@ -222,7 +237,7 @@ export async function toResponseContent(
   log.info(`Response from ${ext.describe()}:`, content);
 
   // Determine if the response should be a resource or text
-  const isResourceType = ['application/json', 'application/x-www-form-urlencoded'].includes(
+  const isResourceType = [CONTENT_TYPE_JSON, CONTENT_TYPE_FORM_URLENCODED].includes(
     ext.responseType,
   );
 

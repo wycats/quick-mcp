@@ -1,6 +1,0 @@
-build:
-  docker:
-    mcp-quick-mcp: Dockerfile
-
-run:
-  mcp-quick-mcp: node --experimental-strip-types packages/core/src/main.ts --env

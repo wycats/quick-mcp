@@ -1,8 +1,8 @@
-# MCPify AI Assistant Philosophy
+# Quick-MCP AI Assistant Philosophy
 
 ## Core Principle: Collaborative Partnership
 
-The MCPify project embraces AI assistants as thoughtful collaborators in a pair programming relationship. This philosophy prioritizes understanding, consistency, and quality over speed.
+The Quick-MCP project embraces AI assistants as thoughtful collaborators in a pair programming relationship. This philosophy prioritizes understanding, consistency, and quality over speed.
 
 ## Key Philosophy Elements
 

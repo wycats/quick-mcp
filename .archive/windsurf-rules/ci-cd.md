@@ -4,7 +4,7 @@ trigger: always_on
 
 # CI/CD Workflows
 
-This document outlines the continuous integration and deployment workflows used in the MCPify project.
+This document outlines the continuous integration and deployment workflows used in the Quick-MCP project.
 
 ## GitHub Actions Workflows
 

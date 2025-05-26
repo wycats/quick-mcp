@@ -4,17 +4,17 @@ trigger: always_on
 
 # Project Structure
 
-This document outlines the organization of the MCP-ify codebase to help you navigate and understand its components.
+This document outlines the organization of the Quick-MCP codebase to help you navigate and understand its components.
 
 ## Monorepo Structure
 
-MCP-ify uses a monorepo structure with pnpm workspaces:
+Quick-MCP uses a monorepo structure with pnpm workspaces:
 
 ```
-mcpify/
+quick-mcp/
 ├── llm-guidance/       # AI assistant guidance files
 ├── packages/           # Main code packages
-│   ├── core/           # Core MCP-ify functionality
+│   ├── core/           # Core Quick-MCP functionality
 │   └── demo/           # Demo implementation
 ├── package.json        # Root package configuration
 └── tsconfig.json       # TypeScript configuration
@@ -52,7 +52,7 @@ packages/demo/
 └── tsconfig.json
 ```
 
-This package showcases how to use the core MCPify library with real-world examples.
+This package showcases how to use the core Quick-MCP library with real-world examples.
 
 ## Configuration Files
 
@@ -80,7 +80,7 @@ Each package has its own:
 Follow these import patterns when working with the codebase:
 
 - Use relative imports within a package: `import { thing } from '../util.ts'`. Include the file extension.
-- Use package imports between packages: `import { thing } from '@mcpify/core'`
+- Use package imports between packages: `import { thing } from '@quick-mcp/core'`
 - Organize imports logically (built-ins, then external, then internal)
 
 ## Development Workflow

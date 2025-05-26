@@ -1,4 +1,5 @@
 // We define our own PathOperation interface to avoid direct dependency on OAS implementation
+import type { JsonValue, JsonObject, LiteralUnion } from 'type-fest';
 import type { z } from 'zod';
 
 import type { PathOperation } from '../client.ts';
@@ -14,27 +15,14 @@ export interface ServerVariable {
   enum?: string[];
 }
 
-/**
- * Type for JSON values in parameters
- */
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-  | JsonValue[]
-  | { [key: string]: JsonValue };
-
-/**
- * Type for JSON objects in parameters
- */
-export type JsonObject = Record<string, JsonValue>;
+// JSON types are now imported from type-fest
+// Re-export for compatibility
+export type { JsonValue, JsonObject } from 'type-fest';
 
 /**
  * Location where a parameter can be placed in an HTTP request
  */
-export type BucketLocation = 'path' | 'query' | 'header' | 'cookie';
+export type BucketLocation = LiteralUnion<'path' | 'query' | 'header' | 'cookie', string>;
 
 /**
  * Minimal interface for operations used by bucketArgs
@@ -51,7 +39,7 @@ export interface BucketOperation {
  * Structured representation of request parameters by their location
  */
 export interface BucketedArgs {
-  body?: JsonValue;
+  body?: JsonValue | undefined;
   cookie?: Record<string, string>;
   formData?: FormData | URLSearchParams | null; // For form-urlencoded or multipart form data
   header?: Record<string, string>;
@@ -111,11 +99,13 @@ export function bucketArgs(operation: PathOperation, args: JsonObject): Bucketed
     if (
       mime === 'application/json' &&
       typeof values.body === 'object' &&
+      values.body !== null &&
       !Array.isArray(values.body)
     ) {
       // merge into existing JSON object
-      values.body = { ...values.body, ...leftovers };
-    } else if (Object.keys(values.body ?? {}).length === 0) {
+      const bodyObject = values.body as JsonObject;
+      values.body = { ...bodyObject, ...leftovers };
+    } else if (Object.keys((values.body && typeof values.body === 'object' && !Array.isArray(values.body)) ? values.body as Record<string, unknown> : {}).length === 0) {
       values.body = Object.keys(leftovers).length ? leftovers : values.body;
     }
   }

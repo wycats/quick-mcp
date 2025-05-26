@@ -213,7 +213,7 @@ export class ResponseSchemaExtractor {
  * try {
  *   const validatedData = schemas['200'].parse(responseData);
  * } catch (error) {
- *   console.error('Response validation failed:', error);
+ *   app.log.error('Response validation failed:', { error });
  * }
  * ```
  */

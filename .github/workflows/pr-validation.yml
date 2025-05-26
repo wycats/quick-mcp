@@ -46,9 +46,9 @@ jobs:
       # Run TypeScript checks
       - name: Type check
         run: |
-          pnpm --filter "@mcpify/core" typecheck
-          pnpm --filter "@mcpify/demo" typecheck
-          pnpm --filter "@mcpify/tests" typecheck
+          pnpm --filter "@quick-mcp/core" typecheck
+          pnpm --filter "@quick-mcp/demo" typecheck
+          pnpm --filter "@quick-mcp/tests" typecheck
 
       # Build verification
       - name: Build packages

@@ -31,18 +31,3 @@ export function getBaseUrl(urlProvider: UrlProvider): string {
 
   return url;
 }
-
-if (import.meta.vitest) {
-  const { it, expect } = import.meta.vitest;
-
-  it('should return the base URL from the OAS', () => {
-    // Create mock with a URL
-    const provider: UrlProvider = { url: () => 'https://api.example.com' };
-    expect(getBaseUrl(provider)).toBe('https://api.example.com');
-  });
-
-  it('should remove trailing slashes', () => {
-    const provider: UrlProvider = { url: () => 'https://api.example.com/' };
-    expect(getBaseUrl(provider)).toBe('https://api.example.com');
-  });
-}

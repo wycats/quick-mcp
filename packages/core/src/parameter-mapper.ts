@@ -31,6 +31,24 @@ function assertDeref<T extends object>(obj: T): Deref<T> {
 }
 
 function convertToJSONSchema(obj: Deref<OpenAPIV3.SchemaObject>): JSONSchema {
+  // Validate that the object has the basic structure expected for JSONSchema
+  if (typeof obj !== 'object') {
+    throw new Error('Invalid schema object: expected object');
+  }
+  
+  // Check for required properties that indicate this is a valid schema
+  const hasValidSchemaStructure = 
+    'type' in obj || 
+    'properties' in obj || 
+    'anyOf' in obj || 
+    'oneOf' in obj || 
+    'allOf' in obj;
+    
+  if (!hasValidSchemaStructure) {
+    throw new Error('Invalid schema object: missing required schema properties');
+  }
+  
+  // Safe conversion after validation
   return obj as unknown as JSONSchema;
 }
 
@@ -62,11 +80,23 @@ function extractRequestBodySchema(oas: Operation, app: { log: LogLayer }): JSONS
       paths?: PathsObject;
     }
 
-    // Isolate the any conversion to a single constrained location with appropriate comment
-    // We need to access the underlying API object which is not exposed through the public interface
+    // Create a type guard to safely access the API object
+    function isValidApiObject(obj: unknown): obj is ApiObject {
+      return (
+        typeof obj === 'object' &&
+        obj !== null &&
+        'paths' in obj &&
+        typeof (obj as Record<string, unknown>)['paths'] === 'object'
+      );
+    }
 
-    // Type cast to our defined interface after extraction for type safety
-    const api = oas.api as ApiObject;
+    // Safely access the underlying API object with validation
+    if (!isValidApiObject(oas.api)) {
+      app.log.warn('Unable to access OpenAPI specification - invalid API structure');
+      return null;
+    }
+    
+    const api = oas.api;
 
     // Function to safely retrieve schema using properly typed structures
     const getSchema = (cType: string): JSONSchema | null => {
@@ -75,11 +105,25 @@ function extractRequestBodySchema(oas: Operation, app: { log: LogLayer }): JSONS
         const path = api.paths?.[oas.path];
         const method = path?.[oas.method];
         const requestBody = method?.requestBody;
-        const content = requestBody?.content;
-        const contentTypeSchema = content?.[cType]?.schema;
+        
+        // Check if requestBody is a reference object (not resolved)
+        if (!requestBody || '$ref' in requestBody) {
+          return null;
+        }
+        
+        const content = requestBody.content;
+        const contentTypeSchema = content[cType]?.schema;
 
-        return contentTypeSchema ?? null;
-      } catch {
+        // Ensure the schema is properly dereferenced and convert to JSONSchema
+        if (contentTypeSchema && '$ref' in contentTypeSchema) {
+          return null; // Skip reference objects that weren't dereferenced
+        }
+
+        return contentTypeSchema ? convertToJSONSchema(assertDeref(contentTypeSchema)) : null;
+      } catch (error) {
+        // Log schema extraction failure for debugging
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        app.log.debug(`Failed to extract schema from request body (${cType}): ${errorMsg}`);
         return null;
       }
     };
@@ -100,7 +144,8 @@ function extractRequestBodySchema(oas: Operation, app: { log: LogLayer }): JSONS
 
     return null;
   } catch (error) {
-    app.log.error('Error extracting request body schema', String(error));
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    app.log.error(`Failed to extract request body schema for ${oas.method} ${oas.path}: ${errorMsg}`);
     return null;
   }
 }

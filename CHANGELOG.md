@@ -8,6 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased
 
 ### Features
-- Initial implementation of MCPify core functionality
+- Initial implementation of Quick-MCP core functionality
 - OpenAPI to MCP tool conversion
 - Integration test package setup

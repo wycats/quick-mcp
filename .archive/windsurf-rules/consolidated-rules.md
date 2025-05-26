@@ -2,7 +2,7 @@
 trigger: always_on
 ---
 
-# MCPify AI Assistant Rules
+# Quick-MCP AI Assistant Rules
 
 ## Core Philosophy
 **Understand first, suggest later.** Explore existing patterns before offering solutions. Match established conventions and ask clarifying questions when requirements are unclear.
@@ -64,10 +64,10 @@ trigger: always_on
 - Build: `pnpm build`, `pnpm dev`, `pnpm start:core`
 - Quality: `pnpm lint`, `pnpm lint:fix`, `pnpm lint:strict`  
 - Testing: `pnpm test`, `pnpm test:coverage`
-- Demo: `pnpm dev:demo`, `pnpm mcpify`
+- Demo: `pnpm dev:demo`, `pnpm quick-mcp`
 
 ## Architecture Notes
 - **Dynamic Proxy**: Runtime OpenAPI→MCP conversion, no static generation
-- **Operation-Centric**: McpifyOperation class wraps OpenAPI operations
+- **Operation-Centric**: QuickMcpOperation class wraps OpenAPI operations
 - **Resource vs Tool**: GET operations with path-only params = resources, others = tools
 - **Pipeline**: OpenAPI schemas → JSON Schema → Zod validation

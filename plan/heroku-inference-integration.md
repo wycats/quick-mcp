@@ -200,28 +200,26 @@ async function debugAssistant(query, mcpContext) {
 
 ### **Heroku Deployment Pattern**
 
-```yaml
-# heroku.yml
-setup:
-  addons:
-    - plan: heroku-postgresql:mini
-    - plan: heroku-inference:standard
+```bash
+# Add required add-ons
+heroku addons:create heroku-postgresql:mini
+heroku addons:create heroku-inference:standard
 
-build:
-  docker:
-    web: Dockerfile
-
-run:
-  web: npm start
-  worker: quick-mcp-ai-worker
+# Deploy using native buildpacks (automatic detection)
+git push heroku main
 ```
+
+The Heroku Node.js buildpack will automatically:
+- Detect the Node.js/pnpm project
+- Install dependencies
+- Set the start command to use `--env` for 12-factor configuration
 
 ### **Environment Configuration**
 ```bash
 # Required environment variables
 HEROKU_INFERENCE_API_KEY=your_key_here
 HEROKU_CLAUDE_MODEL_ID=claude-3.5-sonnet
-MCPIFY_AI_FEATURES=validation,generation,debugging
+QUICK_MCP_AI_FEATURES=validation,generation,debugging
 ```
 
 ### **Service Architecture**

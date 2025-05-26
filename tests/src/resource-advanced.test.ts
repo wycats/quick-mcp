@@ -183,7 +183,7 @@ describe('Advanced Resource Registration Tests', () => {
   });
 
   describe('Resource Classification Rules', () => {
-    it('should not register resources with x-mcpify:ignore=resource config', () => {
+    it('should not register resources with x-quick-mcp:ignore=resource config', () => {
       const spec = {
         openapi: '3.0.0',
         info: { title: 'Resource Ignore API', version: '1.0.0' },
@@ -191,7 +191,7 @@ describe('Advanced Resource Registration Tests', () => {
           '/ignored-resource/{id}': {
             get: {
               operationId: 'getIgnoredResource',
-              'x-mcpify': {
+              'x-quick-mcp': {
                 ignore: 'resource'
               },
               parameters: [
@@ -287,7 +287,7 @@ describe('Advanced Resource Registration Tests', () => {
           '/unsafe-get/{id}': {
             get: {
               operationId: 'getUnsafe',
-              'x-mcpify': {
+              'x-quick-mcp': {
                 annotations: {
                   readOnlyHint: false,
                   destructiveHint: true
@@ -301,7 +301,7 @@ describe('Advanced Resource Registration Tests', () => {
           '/safe-get/{id}': {
             get: {
               operationId: 'getSafe',
-              'x-mcpify': {
+              'x-quick-mcp': {
                 annotations: {
                   readOnlyHint: true
                 }
