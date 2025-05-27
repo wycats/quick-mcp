@@ -1,6 +1,7 @@
 # Contributing to Quick-MCP
 
-Thank you for contributing to Quick-MCP! This guide provides development standards and practices for maintaining high-quality, production-ready code.
+Thank you for contributing to Quick-MCP! This guide provides development
+standards and practices for maintaining high-quality, production-ready code.
 
 ## Quick Start
 
@@ -17,12 +18,14 @@ pnpm test
 
 # Start demo environment
 pnpm dev:demo                # Terminal 1: Demo API
-pnpm dev --spec http://localhost:3001/api-docs.json --port 8080 --transport http  # Terminal 2: Quick-MCP
+# Terminal 2: Quick-MCP
+pnpm dev --spec http://localhost:3001/api-docs.json --port 8080 --transport http
 ```
 
 ### Before Contributing
 
-- [ ] Read [DEVELOPMENT_PRACTICES.md](DEVELOPMENT_PRACTICES.md) for AI-assisted development workflows
+- [ ] Read [DEVELOPMENT_PRACTICES.md](DEVELOPMENT_PRACTICES.md) for AI-assisted
+      development workflows
 - [ ] Ensure all tests pass: `pnpm test`
 - [ ] Check code quality: `pnpm lint:strict`
 - [ ] Build successfully: `pnpm build`
@@ -35,7 +38,7 @@ pnpm dev --spec http://localhost:3001/api-docs.json --port 8080 --transport http
 // ✅ DO: Explicit types and private fields
 export class OpenApiSpecProcessor {
   readonly #cache: Map<string, ProcessedSpec> = new Map();
-  
+
   async parseSpec(url: SpecUrl): Promise<ProcessedSpec> {
     // Implementation
   }
@@ -44,7 +47,7 @@ export class OpenApiSpecProcessor {
 // ❌ DON'T: Any types or public fields
 export class BadProcessor {
   cache: any; // Never use 'any'
-  
+
   parseSpec(url: any): any {
     // Missing type safety
   }
@@ -54,10 +57,12 @@ export class BadProcessor {
 ### Quality Standards
 
 - **Type Safety**: Zero `any` types, explicit return types for all functions
-- **Error Handling**: Domain-specific errors with context, no console.* in library code
+- **Error Handling**: Domain-specific errors with context, no console.\* in
+  library code
 - **Function Size**: Maximum 50 lines per function
 - **File Size**: Maximum 200 lines per file
-- **Naming**: Domain-specific names over generic (`McpOperation` not `operation`)
+- **Naming**: Domain-specific names over generic (`McpOperation` not
+  `operation`)
 
 ### Code Organization
 
@@ -114,8 +119,9 @@ describe('OpenApiSpecProcessor', () => {
   // Test edge cases (critical for AI-generated code)
   it('handles malformed specs gracefully', async () => {
     const invalidSpec = createMalformedSpec();
-    await expect(processor.parse(invalidSpec))
-      .rejects.toThrow(SpecValidationError);
+    await expect(processor.parse(invalidSpec)).rejects.toThrow(
+      SpecValidationError,
+    );
   });
 
   // Test resource limits
@@ -131,8 +137,10 @@ describe('OpenApiSpecProcessor', () => {
 
 ### Core Design Principles
 
-1. **Domain-Driven Design**: Clear separation between business logic and infrastructure
-2. **Functional Core, Imperative Shell**: Pure functions at the core, side effects at boundaries  
+1. **Domain-Driven Design**: Clear separation between business logic and
+   infrastructure
+2. **Functional Core, Imperative Shell**: Pure functions at the core, side
+   effects at boundaries
 3. **Explicit Dependencies**: Constructor injection, no hidden globals
 4. **Fail Fast**: Validate inputs at boundaries, throw meaningful errors
 
@@ -190,7 +198,7 @@ Use Conventional Commits format:
 
 ```bash
 feat(core): add timeout handling for HTTP requests
-fix(parser): handle circular references in OpenAPI specs  
+fix(parser): handle circular references in OpenAPI specs
 docs(readme): update installation instructions
 test(transport): add integration tests for stdio transport
 ```
@@ -211,7 +219,8 @@ This project follows a structured development approach:
 1. **Exploration Phase**: Rapid prototyping and feature discovery
 2. **Consolidation Phase**: Refinement to production quality
 
-See [DEVELOPMENT_PRACTICES.md](DEVELOPMENT_PRACTICES.md) for detailed AI-assisted development practices.
+See [DEVELOPMENT_PRACTICES.md](DEVELOPMENT_PRACTICES.md) for detailed
+AI-assisted development practices.
 
 ### Scope Management
 
@@ -240,12 +249,13 @@ Quick-MCP is designed to work well with AI coding assistants. Key practices:
 Before considering AI-assisted changes complete:
 
 - [ ] Extract meaningful abstractions
-- [ ] Add comprehensive error handling  
+- [ ] Add comprehensive error handling
 - [ ] Write tests for edge cases
 - [ ] Document design decisions
 - [ ] Ensure production readiness
 
-See [DEVELOPMENT_PRACTICES.md](DEVELOPMENT_PRACTICES.md) for complete AI development workflows.
+See [DEVELOPMENT_PRACTICES.md](DEVELOPMENT_PRACTICES.md) for complete AI
+development workflows.
 
 ## Common Patterns
 
@@ -257,7 +267,7 @@ Preferred for object construction:
 // ✅ DO: Factory methods with validation
 class SpecUrl {
   private constructor(private readonly value: string) {}
-  
+
   static fromString(url: string): SpecUrl {
     if (!URL.canParse(url)) {
       throw new ValidationError(`Invalid URL: ${url}`);
@@ -281,10 +291,11 @@ Use domain-specific errors with context:
 try {
   const spec = await this.fetchSpec(url);
 } catch (error) {
-  throw new SpecFetchError(
-    `Failed to load OpenAPI spec from ${url}`,
-    { cause: error, url, retryCount: this.retryCount }
-  );
+  throw new SpecFetchError(`Failed to load OpenAPI spec from ${url}`, {
+    cause: error,
+    url,
+    retryCount: this.retryCount,
+  });
 }
 
 // ❌ DON'T: Generic errors or console statements
@@ -305,11 +316,13 @@ Use proper async/await with error boundaries:
 async function fetchWithTimeout(url: string): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 5000);
-  
+
   try {
     const response = await fetch(url, { signal: controller.signal });
     if (!response.ok) {
-      throw new HttpError(`HTTP ${response.status}`, { status: response.status });
+      throw new HttpError(`HTTP ${response.status}`, {
+        status: response.status,
+      });
     }
     return response;
   } finally {
@@ -345,9 +358,11 @@ async function parseSpec(spec: object): Promise<ProcessedSpec> {
   // Validate size before processing
   const specSize = JSON.stringify(spec).length;
   if (specSize > MAX_SPEC_SIZE) {
-    throw new SpecTooLargeError(`Spec size ${specSize} exceeds limit ${MAX_SPEC_SIZE}`);
+    throw new SpecTooLargeError(
+      `Spec size ${specSize} exceeds limit ${MAX_SPEC_SIZE}`,
+    );
   }
-  
+
   // Stream processing for large specs
   return this.streamingParser.parse(spec);
 }
@@ -362,4 +377,5 @@ async function parseSpec(spec: object): Promise<ProcessedSpec> {
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the MIT License.
+By contributing, you agree that your contributions will be licensed under the
+MIT License.

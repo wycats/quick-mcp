@@ -1,6 +1,7 @@
 # Next Steps for Quick-MCP
 
-This document tracks the progress of transitioning Quick-MCP from proof-of-concept to production-ready library.
+This document tracks the progress of transitioning Quick-MCP from
+proof-of-concept to production-ready library.
 
 ## Executive Summary
 
@@ -8,15 +9,19 @@ Quick-MCP has made significant progress since the initial analysis:
 
 **✅ Completed:**
 
-1. **Phase 1 Documentation consolidation** - All core docs created and outdated content archived
-2. **Complete branding migration** - No remaining MCPify references in active code
-3. **Basic timeout implementation** - HTTP requests now have configurable 30-second timeout
+1. **Phase 1 Documentation consolidation** - All core docs created and outdated
+   content archived
+2. **Complete branding migration** - No remaining MCPify references in active
+   code
+3. **Basic timeout implementation** - HTTP requests now have configurable
+   30-second timeout
 4. **Transport layer tests** - Basic test coverage added (was 0%)
 
 **🔄 Current State:**
 
 - **Test coverage**: 46.61% (target: 70%+)
-- **Architecture**: Core conversion works reliably, but lacks production hardening
+- **Architecture**: Core conversion works reliably, but lacks production
+  hardening
 - **Documentation**: Honest and accurate, with clear roadmap
 - **Error handling**: Basic implementation, needs consistency
 
@@ -53,7 +58,8 @@ Quick-MCP has made significant progress since the initial analysis:
 
 ### 🎯 Immediate Priority: Test Coverage & Production Hardening
 
-The codebase is well-organized but needs production hardening. Focus on these high-impact tasks:
+The codebase is well-organized but needs production hardening. Focus on these
+high-impact tasks:
 
 ### Phase 2A: Critical Test Coverage (1-2 days)
 
@@ -89,13 +95,17 @@ The codebase is well-organized but needs production hardening. Focus on these hi
    ```typescript
    // Create consistent error types (see ARCHITECTURE.md):
    class QuickMcpError extends Error {
-     constructor(message: string, public code: string, public details?: unknown) {}
+     constructor(
+       message: string,
+       public code: string,
+       public details?: unknown,
+     ) {}
    }
-   
+
    class ConfigurationError extends QuickMcpError {} // Invalid config
-   class OpenApiError extends QuickMcpError {}       // Schema parsing failures  
-   class TransportError extends QuickMcpError {}     // Connection issues
-   class OperationError extends QuickMcpError {}     // Tool execution failures
+   class OpenApiError extends QuickMcpError {} // Schema parsing failures
+   class TransportError extends QuickMcpError {} // Connection issues
+   class OperationError extends QuickMcpError {} // Tool execution failures
    ```
 
 2. **Add Retry Logic**
@@ -239,4 +249,4 @@ pnpm dev:demo         # Start demo API
 
 ---
 
-*Last updated: May 26, 2025*
+Last updated: May 26, 2025

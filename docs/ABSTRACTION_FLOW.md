@@ -45,7 +45,7 @@ sequenceDiagram
 > **Note**: Quick-MCP uses simple type aliases and validation functions instead of complex domain objects. This keeps the codebase lean while maintaining type safety.
 
 ### **1. Type Layer**
-```
+```text
 ┌─────────────┬──────────────┬───────────────┐
 │    Port     │   Headers    │   SpecUrl     │
 ├─────────────┼──────────────┼───────────────┤
@@ -65,7 +65,7 @@ sequenceDiagram
 - `parseHeadersFromJSON(json: string): Headers` - Parse JSON headers
 
 ### **2. Configuration Layer**
-```
+```text
 ServerOptions
      │
      ├── spec: string      // validated URL
@@ -82,7 +82,7 @@ ConfigurationBuilder
 ```
 
 ### **3. Operation Layer**
-```
+```text
 OpenAPI Operation
      │
      ├── HTTP Method (GET, POST, etc.)
@@ -103,7 +103,7 @@ QuickMcpOperation
 ```
 
 ### **4. Schema Transformation**
-```
+```text
 OpenAPI Schema          JSONSchema              Zod Schema
 ┌──────────────┐       ┌──────────────┐       ┌──────────────┐
 │ type: string │  ───> │ type: string │  ───> │ z.string()   │
@@ -113,7 +113,7 @@ OpenAPI Schema          JSONSchema              Zod Schema
 
 ## 🔍 Error Handling Flow
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │             Error Hierarchy                  │
 ├─────────────────────────────────────────────┤
@@ -142,7 +142,7 @@ OpenAPI Schema          JSONSchema              Zod Schema
 
 ## 📊 Type Safety Boundaries
 
-```
+```text
 External World          Type Boundary          Internal World
 ─────────────          ─────────────          ──────────────
                            

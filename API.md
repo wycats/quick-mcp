@@ -1,8 +1,9 @@
 # API Reference
 
-**Public API for Quick-MCP Core**
+Public API for Quick-MCP Core
 
-> This documents the stable public interface exported by `@quick-mcp/core`. Internal implementation details may change without notice.
+> This documents the stable public interface exported by `@quick-mcp/core`.
+> Internal implementation details may change without notice.
 
 ## Factory Functions
 
@@ -17,11 +18,12 @@ const server = await createServer({
   spec: 'https://api.example.com/openapi.json',
   transport: 'http',
   port: 3001,
-  headers: new Headers([['Authorization', 'Bearer token']])
+  headers: new Headers([['Authorization', 'Bearer token']]),
 });
 ```
 
 **Parameters:**
+
 - `options: ServerOptions` - Server configuration object
 
 **Returns:** `Promise<QuickMcpServer>` - Configured server instance
@@ -42,17 +44,19 @@ const server = await createServerFromEnvironment();
 
 // Override specific options
 const server2 = await createServerFromEnvironment({
-  port: 8080 // Override environment PORT
+  port: 8080, // Override environment PORT
 });
 ```
 
 **Environment Variables:**
+
 - `OPENAPI_SPEC_URL` - OpenAPI specification URL (required)
 - `TRANSPORT` - Transport type: 'http' | 'stdio' (default: 'http')
 - `PORT` - HTTP server port (default: 3000)
 - `AUTH_HEADERS` - JSON string of authentication headers
 
 **Parameters:**
+
 - `overrides?: Partial<ServerOptions>` - Optional configuration overrides
 
 **Returns:** `Promise<QuickMcpServer>` - Configured server instance
@@ -75,10 +79,12 @@ console.log(server.stats); // Operation statistics
 ```
 
 **Properties:**
+
 - `url: string` - Server URL (HTTP transport only)
 - `stats: OperationStatistics` - Usage statistics and metrics
 
 **Methods:**
+
 - `connect(): Promise<void>` - Start the server and begin accepting connections
 - `close(): Promise<void>` - Gracefully shut down the server
 
@@ -95,17 +101,22 @@ const spec = await OpenApiSpec.load('https://api.example.com/openapi.json');
 
 // Access parsed operations
 const operations = spec.getAllOperations();
-operations.forEach(op => {
+operations.forEach((op) => {
   console.log(`${op.method} ${op.path}`);
 });
 ```
 
 **Static Methods:**
-- `load(spec: string, options?: OpenApiSpecOptions): Promise<OpenApiSpec>` - Load from URL or file path
+
+- `load(spec: string, options?: OpenApiSpecOptions): Promise<OpenApiSpec>` -
+  Load from URL or file path
 
 **Instance Methods:**
-- `getAllOperations(): McpifyOperation[]` - Get all operations as MCP tools/resources
-- `getOperationById(id: string): McpifyOperation | undefined` - Find operation by ID
+
+- `getAllOperations(): McpifyOperation[]` - Get all operations as MCP
+  tools/resources
+- `getOperationById(id: string): McpifyOperation | undefined` - Find operation
+  by ID
 
 ## Type Definitions
 
@@ -117,16 +128,16 @@ Configuration options for creating a server.
 interface ServerOptions {
   /** OpenAPI specification URL or file path */
   spec: string;
-  
+
   /** Transport type for MCP communication */
   transport: 'http' | 'stdio';
-  
+
   /** Port for HTTP transport (ignored for stdio) */
   port?: number;
-  
+
   /** Headers to forward to OpenAPI requests */
   headers?: Headers;
-  
+
   /** Optional logging configuration */
   log?: LogLayer;
 }
@@ -142,7 +153,7 @@ Options for loading OpenAPI specifications.
 interface OpenApiSpecOptions {
   /** Custom headers for loading remote specs */
   headers?: Headers;
-  
+
   /** Request timeout in milliseconds */
   timeout?: number;
 }
@@ -158,15 +169,15 @@ Represents a single OpenAPI operation converted to MCP format.
 // Operations are accessed through OpenApiSpec
 const operations = spec.getAllOperations();
 
-operations.forEach(operation => {
+operations.forEach((operation) => {
   console.log(`Operation: ${operation.operationId}`);
-  
+
   if (operation.isResource()) {
     // GET operations with path-only parameters
     const resource = operation.asResource();
     console.log(`Resource: ${resource.name}`);
   } else {
-    // All other operations  
+    // All other operations
     const tool = operation.asTool();
     console.log(`Tool: ${tool.name}`);
   }
@@ -174,11 +185,13 @@ operations.forEach(operation => {
 ```
 
 **Properties:**
+
 - `operationId: string` - Unique operation identifier
 - `method: string` - HTTP method (GET, POST, etc.)
 - `path: string` - URL path template
 
 **Methods:**
+
 - `isResource(): boolean` - Check if operation is classified as MCP resource
 - `asTool(): McpTool` - Convert to MCP tool format
 - `asResource(): McpResource` - Convert to MCP resource format
@@ -188,11 +201,11 @@ operations.forEach(operation => {
 ### Error Hierarchy
 
 ```typescript
-import { 
-  ConfigurationError, 
-  OpenApiError, 
-  TransportError, 
-  ServerError 
+import {
+  ConfigurationError,
+  OpenApiError,
+  TransportError,
+  ServerError,
 } from '@quick-mcp/core';
 
 try {
@@ -208,8 +221,9 @@ try {
 ```
 
 **Error Types:**
+
 - `ConfigurationError` - Invalid server options or environment
-- `OpenApiError` - OpenAPI specification parsing failures  
+- `OpenApiError` - OpenAPI specification parsing failures
 - `TransportError` - Network or connection errors
 - `ServerError` - Runtime server errors
 
@@ -223,7 +237,7 @@ import { createServer } from '@quick-mcp/core';
 const server = await createServer({
   spec: 'https://petstore.swagger.io/v2/swagger.json',
   transport: 'http',
-  port: 3001
+  port: 3001,
 });
 
 await server.connect();
@@ -237,7 +251,7 @@ import { createServer } from '@quick-mcp/core';
 
 const server = await createServer({
   spec: './api-spec.yaml',
-  transport: 'stdio'
+  transport: 'stdio',
 });
 
 await server.connect();
@@ -267,13 +281,13 @@ import { createServer } from '@quick-mcp/core';
 const headers = new Headers([
   ['Authorization', 'Bearer token'],
   ['X-API-Key', 'api-key-value'],
-  ['User-Agent', 'Quick-MCP/1.0']
+  ['User-Agent', 'Quick-MCP/1.0'],
 ]);
 
 const server = await createServer({
   spec: 'https://api.example.com/openapi.json',
   transport: 'http',
-  headers
+  headers,
 });
 ```
 
@@ -297,4 +311,5 @@ import { createServer } from '@quick-mcp/core';
 const server = await createServer(options);
 ```
 
-The legacy `QuickMCP` class is still available but deprecated. Use factory functions for new code.
+The legacy `QuickMCP` class is still available but deprecated. Use factory
+functions for new code.

@@ -1,15 +1,22 @@
 # Release Process
 
-Releases in this repo are mostly automated using [release-plan](https://github.com/embroider-build/release-plan/). Once you label all your PRs correctly (see below) you will have an automatically generated PR that updates your CHANGELOG.md file and a `.release-plan.json` that is used to prepare the release once the PR is merged.
+Releases in this repo are mostly automated using
+[release-plan](https://github.com/embroider-build/release-plan/). Once you label
+all your PRs correctly (see below) you will have an automatically generated PR
+that updates your CHANGELOG.md file and a `.release-plan.json` that is used to
+prepare the release once the PR is merged.
 
 ## Preparation
 
-Since the majority of the actual release process is automated, the remaining tasks before releasing are:
+Since the majority of the actual release process is automated, the remaining
+tasks before releasing are:
 
-- correctly labeling **all** pull requests that have been merged since the last release
+- correctly labeling **all** pull requests that have been merged since the last
+  release
 - updating pull request titles so they make sense to our users
 
-Some great information on why this is important can be found at [keepachangelog.com](https://keepachangelog.com/en/1.1.0/), but the overall
+Some great information on why this is important can be found at
+[keepachangelog.com](https://keepachangelog.com/en/1.1.0/), but the overall
 guiding principle here is that changelogs are for humans, not machines.
 
 When reviewing merged PR's the labels to be used are:
@@ -20,8 +27,12 @@ When reviewing merged PR's the labels to be used are:
 - documentation - Used when the PR adds or updates documentation.
 - internal - Internal changes or things that don't fit in any other category.
 
-**Note:** `release-plan` requires that **all** PRs are labeled. If a PR doesn't fit in a category it's fine to label it as `internal`
+**Note:** `release-plan` requires that **all** PRs are labeled. If a PR doesn't
+fit in a category it's fine to label it as `internal`
 
 ## Release
 
-Once the prep work is completed, the actual release is straight forward: you just need to merge the open [Plan Release](https://github.com/wycats/quick-mcp/pulls?q=is%3Apr+is%3Aopen+%22Prepare+Release%22+in%3Atitle) PR
+Once the prep work is completed, the actual release is straight forward: you
+just need to merge the open
+[Plan Release](https://github.com/wycats/quick-mcp/pulls?q=is%3Apr+is%3Aopen+%22Prepare+Release%22+in%3Atitle)
+PR

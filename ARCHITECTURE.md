@@ -1,18 +1,35 @@
 # Quick-MCP Architecture
 
-This document describes the system design, core patterns, and architectural decisions for Quick-MCP.
+This document describes the system design, core patterns, and architectural
+decisions for Quick-MCP.
 
 ## System Overview
 
-Quick-MCP is a dynamic proxy that converts OpenAPI specifications into Model Context Protocol (MCP) tools at runtime. It acts as a bridge between AI assistants and REST APIs.
+Quick-MCP is a dynamic proxy server that converts OpenAPI specifications into
+Model Context Protocol (MCP) tools and resources in real-time. Unlike static
+code generators, Quick-MCP maintains a live connection to OpenAPI specifications
+and dynamically translates between MCP and REST protocols.
 
-```
+```text
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   AI Assistant  │◄──►│   Quick-MCP     │◄──►│   REST API      │
-│   (Claude, etc) │    │     Proxy       │    │  (OpenAPI)      │
+│   AI Assistant  │◄──►│   Quick-MCP     │◄──►│   Target API    │
+│   (Claude, etc) │    │  Proxy Server   │    │  (OpenAPI)      │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
-     MCP Protocol         OpenAPI + HTTP          HTTP Requests
+     MCP Protocol         Dynamic Conversion      HTTP Requests
+        │                                              │
+        │                ┌─────────────────┐         │
+        └────────────────┤ Operation Cache ├─────────┘
+                         └─────────────────┘
 ```
+
+### Key Architectural Principles
+
+1. **Dynamic Proxy Pattern**: No code generation - operations are converted at
+   runtime
+2. **Operation-Centric Design**: Each OpenAPI operation becomes an MCP tool or
+   resource
+3. **Transport Agnostic**: Supports both HTTP and STDIO MCP transports
+4. **Developer First**: Built for simplicity with production-grade reliability
 
 ## Core Components
 
@@ -22,14 +39,15 @@ The central component that loads and processes OpenAPI specifications:
 
 ```typescript
 class OpenApiSpec {
-  static async load(url: SpecUrl): Promise<OpenApiSpec>
-  
-  createTools(server: McpServer): void    // POST, PUT, DELETE operations
-  createResources(server: McpServer): void // GET operations (safe reads)
+  static async load(url: SpecUrl): Promise<OpenApiSpec>;
+
+  createTools(server: McpServer): void; // POST, PUT, DELETE operations
+  createResources(server: McpServer): void; // GET operations (safe reads)
 }
 ```
 
 **Responsibilities:**
+
 - Load and validate OpenAPI specifications
 - Convert operations to MCP tool/resource definitions
 - Handle custom `x-quick-mcp` extensions
@@ -41,20 +59,26 @@ Wraps OpenAPI operations with MCP-specific logic:
 
 ```typescript
 class QuickMcpOperation {
-  static from(operation: Operation, extensions: CustomExtensions): QuickMcpOperation
-  
-  get isResource(): boolean    // GET with path-only params
-  get safety(): SafetyLevel    // readonly, update, delete
-  
-  bucketArgs(args: JsonObject): BucketedArgs
-  describe(): string
+  static from(
+    operation: Operation,
+    extensions: CustomExtensions,
+  ): QuickMcpOperation;
+
+  get isResource(): boolean; // GET with path-only params
+  get safety(): SafetyLevel; // readonly, update, delete
+
+  bucketArgs(args: JsonObject): BucketedArgs;
+  describe(): string;
 }
 ```
 
 **Design Decisions:**
-- **Resource Classification**: GET operations with only path parameters are resources (safe reads)
+
+- **Resource Classification**: GET operations with only path parameters are
+  resources (safe reads)
 - **Safety Levels**: Automatic classification based on HTTP verbs
-- **Parameter Bucketing**: Organizes arguments by location (path, query, header, body)
+- **Parameter Bucketing**: Organizes arguments by location (path, query, header,
+  body)
 
 ### 3. Request Building (`request/request-builder.ts`)
 
@@ -65,16 +89,17 @@ export function buildRequest(
   app: { log: LogLayer },
   op: QuickMcpOperation,
   args: OasRequestArgs,
-): Request
+): Request;
 
 export function buildRequestParts(
   app: { log: LogLayer },
   op: QuickMcpOperation,
   args: OasRequestArgs,
-): { url: URL; init: RequestInit }
+): { url: URL; init: RequestInit };
 ```
 
 **Pipeline:**
+
 1. **Argument Bucketing**: Sort args by type (path, query, header, body)
 2. **URL Building**: Expand path templates, add query parameters
 3. **Body Processing**: Handle JSON, form data, or text content
@@ -89,16 +114,17 @@ export async function handleToolResponse(
   response: Response,
   log: LogLayer,
   operation: QuickMcpOperation,
-): Promise<CallToolResult>
+): Promise<CallToolResult>;
 
 export async function handleResourceResponse(
   response: Response,
   log: LogLayer,
   operation: QuickMcpOperation,
-): Promise<ReadResourceResult>
+): Promise<ReadResourceResult>;
 ```
 
 **Processing:**
+
 - Parse response body based on content-type
 - Handle error status codes with context
 - Format for MCP tool result or resource content
@@ -110,16 +136,17 @@ Manages the complete request/response cycle:
 
 ```typescript
 class OperationClient {
-  static tool(app, operation): OperationClient<CallToolResult>
-  static resource(app, operation): OperationClient<ReadResourceResult>
-  
-  async invoke(args): Promise<T>
+  static tool(app, operation): OperationClient<CallToolResult>;
+  static resource(app, operation): OperationClient<ReadResourceResult>;
+
+  async invoke(args): Promise<T>;
 }
 
-function createClient(operation, extensions, options): OperationClient
+function createClient(operation, extensions, options): OperationClient;
 ```
 
 **Responsibilities:**
+
 - Create appropriate client type (tool vs resource)
 - Execute HTTP requests via `executeRequest()`
 - Apply response transformation
@@ -129,7 +156,7 @@ function createClient(operation, extensions, options): OperationClient
 
 ### Tool Call Flow
 
-```
+```text
 1. MCP Client calls tool
    └── Arguments: { userId: "123", name: "John" }
 
@@ -150,7 +177,7 @@ function createClient(operation, extensions, options): OperationClient
 
 ### Resource Read Flow
 
-```
+```text
 1. MCP Client reads resource
    └── URI: quick-mcp://users/123
 
@@ -177,7 +204,7 @@ Used throughout for object construction with validation:
 // Configuration
 const config = createServerConfig(app, overrides);
 
-// Type validation  
+// Type validation
 const port = validatePort(process.env.PORT);
 const url = validateSpecUrl(process.env.SPEC_URL);
 
@@ -192,10 +219,10 @@ const client = OperationClient.tool(app, operation);
 
 ```typescript
 // Pure function (core)
-function buildRequestUrl(operation: Operation, args: BucketedArgs): URL
+function buildRequestUrl(operation: Operation, args: BucketedArgs): URL;
 
-// I/O operation (shell) 
-async function executeRequest(operation, app, args): Promise<Response>
+// I/O operation (shell)
+async function executeRequest(operation, app, args): Promise<Response>;
 ```
 
 ### 3. Strategy Pattern
@@ -232,20 +259,21 @@ paths:
   /users:
     get:
       x-quick-mcp:
-        operationId: 'list_all_users'     # Override operation ID
-        ignore: false                      # Skip this operation
+        operationId: 'list_all_users' # Override operation ID
+        ignore: false # Skip this operation
         annotations:
-          readOnlyHint: true              # Additional metadata
+          readOnlyHint: true # Additional metadata
 ```
 
 **Implementation:**
+
 ```typescript
 class CustomExtensions {
-  static of(extensions: unknown): CustomExtensions
-  
-  getOperationId(): string | undefined
-  shouldIgnore(): boolean
-  getAnnotations(): Record<string, unknown>
+  static of(extensions: unknown): CustomExtensions;
+
+  getOperationId(): string | undefined;
+  shouldIgnore(): boolean;
+  getAnnotations(): Record<string, unknown>;
 }
 ```
 
@@ -292,16 +320,16 @@ Structured error handling with context:
 ```typescript
 export function createConfigurationError(
   message: string,
-  context?: Record<string, unknown>
+  context?: Record<string, unknown>,
 ): QuickMcpError {
   return new QuickMcpError('CONFIGURATION_ERROR', message, context);
 }
 
 // Usage with context
-throw createConfigurationError(
-  'Invalid OpenAPI spec URL',
-  { url: inputUrl, validProtocols: ['http', 'https', 'file'] }
-);
+throw createConfigurationError('Invalid OpenAPI spec URL', {
+  url: inputUrl,
+  validProtocols: ['http', 'https', 'file'],
+});
 ```
 
 ### Error Boundaries
@@ -309,7 +337,7 @@ throw createConfigurationError(
 Clear separation between error types:
 
 - **Configuration Errors**: Invalid setup, missing required values
-- **Network Errors**: HTTP failures, timeouts, connectivity issues  
+- **Network Errors**: HTTP failures, timeouts, connectivity issues
 - **Validation Errors**: Malformed OpenAPI specs, invalid arguments
 - **Runtime Errors**: Unexpected failures during processing
 
@@ -319,8 +347,8 @@ Clear separation between error types:
 
 ```typescript
 interface TransportAdapter {
-  start(server: McpServer): Promise<TransportInfo>
-  stop(): Promise<void>
+  start(server: McpServer): Promise<TransportInfo>;
+  stop(): Promise<void>;
 }
 
 class HttpTransport implements TransportAdapter {
@@ -332,7 +360,8 @@ class StdioTransport implements TransportAdapter {
 }
 ```
 
-**Design Decision**: Abstract transport to support both HTTP (for web clients) and stdio (for CLI usage).
+**Design Decision**: Abstract transport to support both HTTP (for web clients)
+and stdio (for CLI usage).
 
 ## Configuration Management
 
@@ -347,7 +376,7 @@ interface EnvironmentConfig {
   readonly BASE_URL?: string;
   readonly LOG_LEVEL?: LogLevel;
   readonly TRANSPORT?: TransportType;
-  readonly AUTH_HEADERS?: string;  // JSON string
+  readonly AUTH_HEADERS?: string; // JSON string
 }
 
 function loadEnvironmentConfig(): EnvironmentConfig {
@@ -436,4 +465,6 @@ FROM node:18-alpine AS runtime
 
 ---
 
-This architecture balances simplicity with extensibility, providing a solid foundation for converting REST APIs to MCP tools while maintaining production-ready quality and performance characteristics.
+This architecture balances simplicity with extensibility, providing a solid
+foundation for converting REST APIs to MCP tools while maintaining
+production-ready quality and performance characteristics.
