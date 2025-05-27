@@ -55,6 +55,13 @@ export class QuickMcpServer {
   }
 
   /**
+   * Get the OpenAPI spec for testing
+   */
+  get spec(): OpenApiSpec {
+    return this.#state.spec;
+  }
+
+  /**
    * Start the MCP server
    */
   public async start(): Promise<void> {
