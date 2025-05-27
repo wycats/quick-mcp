@@ -1,0 +1,157 @@
+# Ollama Models with Tool Calling Support
+# Generated on 2025-05-28
+# 
+# This file lists Ollama models that support function/tool calling
+# organized by size for easy selection based on available resources.
+
+[metadata]
+description = "Ollama models with verified tool calling support"
+last_updated = "2025-05-28"
+source = "Ollama documentation and community testing"
+
+# Tiny Models (Under 1GB) - Fast inference, limited capabilities
+[[models.tiny]]
+name = "smollm2"
+size = "135M"
+download_size = "92MB"
+variants = ["135m", "360m"]
+tool_support = true
+notes = "Smallest model with tool support"
+
+[[models.tiny]]
+name = "qwen2.5"
+size = "0.5B"
+download_size = "994MB"
+variants = ["0.5b"]
+tool_support = true
+notes = "Qwen series has reliable tool support"
+
+[[models.tiny]]
+name = "qwen2.5-coder"
+size = "0.5B"
+download_size = "394MB"
+variants = ["0.5b"]
+tool_support = true
+notes = "Optimized for code-related tasks"
+
+# Small Models (1-3GB) - Good balance of speed and capability
+[[models.small]]
+name = "llama3.2"
+size = "1B"
+download_size = "1.3GB"
+variants = ["1b"]
+tool_support = true
+notes = "Latest Llama with tool support, good performance"
+recommended = true
+
+[[models.small]]
+name = "granite3-moe"
+size = "1B"
+download_size = "1.1GB"
+variants = ["1b", "3b"]
+tool_support = true
+notes = "IBM's mixture of experts model"
+
+[[models.small]]
+name = "qwen2.5"
+size = "1.5B"
+download_size = "1.7GB"
+variants = ["1.5b"]
+tool_support = true
+notes = "Larger Qwen variant with better reasoning"
+
+[[models.small]]
+name = "qwen2.5-coder"
+size = "1.5B"
+download_size = "986MB"
+variants = ["1.5b"]
+tool_support = true
+notes = "Code-optimized with tool calling"
+recommended = true
+
+[[models.small]]
+name = "smollm2"
+size = "1.7B"
+download_size = "1.8GB"
+variants = ["1.7b"]
+tool_support = true
+notes = "Larger SmollM with improved capabilities"
+
+[[models.small]]
+name = "llama3.2"
+size = "3B"
+download_size = "2.0GB"
+variants = ["3b"]
+tool_support = true
+notes = "Larger Llama 3.2 with better performance"
+
+# Medium Models (4-8GB) - Production-ready performance
+[[models.medium]]
+name = "llama3.1"
+size = "8B"
+download_size = "4.7GB"
+variants = ["8b", "8b-instruct"]
+tool_support = true
+notes = "Proven tool calling performance"
+recommended = true
+
+[[models.medium]]
+name = "qwen2.5"
+size = "7B"
+download_size = "4.7GB"
+variants = ["7b"]
+tool_support = true
+notes = "Excellent multilingual support with tools"
+
+[[models.medium]]
+name = "mistral"
+size = "7B"
+download_size = "4.1GB"
+variants = ["7b", "7b-instruct"]
+tool_support = true
+notes = "Good general-purpose model with tool support"
+
+[[models.medium]]
+name = "mistral-nemo"
+size = "12B"
+download_size = "7.1GB"
+variants = ["12b"]
+tool_support = true
+notes = "Enhanced Mistral with better tool handling"
+
+# Large Models (10GB+) - Best performance, resource intensive
+[[models.large]]
+name = "firefunction-v2"
+size = "70B"
+download_size = "17GB+"
+variants = ["70b"]
+tool_support = true
+notes = "Specialized for function calling"
+
+[[models.large]]
+name = "command-r-plus"
+size = "104B"
+download_size = "59GB"
+variants = ["104b"]
+tool_support = true
+notes = "Cohere's model with excellent tool support"
+
+# Testing recommendations
+[testing]
+quick_tests = ["qwen2.5:0.5b", "llama3.2:1b", "qwen2.5-coder:1.5b"]
+balanced_tests = ["llama3.2:3b", "qwen2.5:7b", "llama3.1:8b"]
+comprehensive_tests = ["llama3.1:8b", "mistral-nemo:12b", "firefunction-v2:70b"]
+
+# Performance expectations on CPU
+[performance.cpu]
+tiny = "2-5 seconds per call"
+small = "5-15 seconds per call"
+medium = "20-60 seconds per call"
+large = "60+ seconds per call"
+
+# Performance expectations with GPU
+[performance.gpu]
+tiny = "< 1 second per call"
+small = "1-3 seconds per call"
+medium = "3-10 seconds per call"
+large = "10-30 seconds per call"

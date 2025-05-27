@@ -116,6 +116,7 @@ export default [
       // Custom rules
       'custom/no-mocks-spies': 'error',
       'custom/require-ts-extensions': 'error',
+      'custom/no-dynamic-imports': 'error',
 
       // Environment specific rules
       'no-undef': 'off', // TypeScript already handles this better
@@ -185,6 +186,85 @@ export default [
   },
 
   // Apply Prettier config at the end to override formatting rules
+  // Apply TypeScript plugin's configuration for test package
+  {
+    files: ['packages/test/**/*.ts', 'packages/test/**/*.tsx'],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaVersion: 2022,
+        sourceType: 'module',
+        project: './packages/test/tsconfig.json',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescript,
+      import: importPlugin,
+      'custom': customRules,
+    },
+    rules: {
+      ...typescript.configs['recommended'].rules,
+      ...typescript.configs['strict'].rules,
+      ...typescript.configs['strict-type-checked'].rules,
+      ...typescript.configs['stylistic-type-checked'].rules,
+
+      // Apply same strict rules as core package
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowExpressions: true,
+          allowHigherOrderFunctions: true,
+          allowTypedFunctionExpressions: true,
+        },
+      ],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        {
+          prefer: 'type-imports',
+          disallowTypeAnnotations: true,
+        },
+      ],
+      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      '@typescript-eslint/prefer-optional-chain': 'error',
+      '@typescript-eslint/prefer-ts-expect-error': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+      
+      // Stricter rules for test package
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/no-unsafe-argument': 'error',
+      '@typescript-eslint/restrict-template-expressions': [
+        'error',
+        {
+          allowNumber: true,
+          allowBoolean: true,
+          allowAny: false,
+          allowNullish: false,
+          allowRegExp: false,
+        },
+      ],
+      
+      // Custom rules for test package
+      'custom/require-ts-extensions': 'error',
+      'custom/no-mocks-spies': 'error',
+      'custom/no-dynamic-imports': 'error',
+      
+      // Console allowed for CLI tool
+      'no-console': ['warn', { allow: ['warn', 'error', 'info', 'debug', 'log'] }],
+    },
+  },
+
   // Apply TypeScript plugin's configuration for demo package
   {
     files: ['packages/demo/**/*.ts', 'packages/demo/**/*.tsx'],

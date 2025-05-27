@@ -1,0 +1,27 @@
+scenarios:
+  - name: "Tool Discovery"
+    prompt: "What tools are available? Please list all the tools you can use to help me."
+    expect:
+      - response_contains: ["tool", "available"]
+      - tool_count: ">= 1"
+      - no_errors: true
+
+  - name: "API Understanding"  
+    prompt: "Explain what this API does and what kinds of operations I can perform with it."
+    expect:
+      - response_contains: ["API", "operation"]
+      - response_time: "< 10s"
+      - no_errors: true
+
+  - name: "Simple Tool Usage"
+    prompt: "Try using one of the available tools to demonstrate how it works."
+    expect:
+      - tool_count: ">= 1"
+      - response_time: "< 15s"
+      - no_errors: true
+
+  - name: "Help and Documentation"
+    prompt: "How can I get help or documentation about the available tools?"
+    expect:
+      - response_contains: ["help", "documentation", "tool"]
+      - no_errors: true

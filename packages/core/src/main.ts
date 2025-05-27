@@ -17,10 +17,12 @@ export type { OpenApiSpecOptions } from './openapi.ts';
 // Export OpenApiSpec for advanced use cases
 export { OpenApiSpec } from './openapi.ts';
 
+// Import CLI for conditional execution
+import { createCLI } from './cli.ts';
+
 
 // CLI bootstrap - only run if this file is the main module
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const { createCLI } = await import('./cli.ts');
   const program = createCLI();
   program.parse();
 }

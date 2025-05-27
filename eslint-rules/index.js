@@ -267,9 +267,53 @@ const requireTsExtensions = {
   },
 };
 
+/**
+ * ESLint rule to discourage dynamic imports
+ * @type {RuleModule}
+ */
+const noDynamicImports = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description: 'Discourage the use of dynamic imports (await import)',
+      category: 'Best Practices',
+      recommended: true,
+    },
+    schema: [],
+    messages: {
+      noDynamicImport: 'Avoid dynamic imports with await import(). Use static imports instead for better bundling, testing, and static analysis.',
+    },
+  },
+  /**
+   * @param {RuleContext} context
+   */
+  create(context) {
+    return {
+      /**
+       * @param {any} node
+       */
+      AwaitExpression(node) {
+        // Check if this is await import(...)
+        if (
+          node.argument &&
+          node.argument.type === 'CallExpression' &&
+          node.argument.callee &&
+          node.argument.callee.type === 'Import'
+        ) {
+          context.report({
+            node,
+            messageId: 'noDynamicImport',
+          });
+        }
+      },
+    };
+  },
+};
+
 export default {
   rules: {
     'no-mocks-spies': noMocksSpies,
     'require-ts-extensions': requireTsExtensions,
+    'no-dynamic-imports': noDynamicImports,
   },
 };

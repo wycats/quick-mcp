@@ -113,9 +113,9 @@ operations.forEach((op) => {
 
 **Instance Methods:**
 
-- `getAllOperations(): McpifyOperation[]` - Get all operations as MCP
+- `getAllOperations(): QuickMcpOperation[]` - Get all operations as MCP
   tools/resources
-- `getOperationById(id: string): McpifyOperation | undefined` - Find operation
+- `getOperationById(id: string): QuickMcpOperation | undefined` - Find operation
   by ID
 
 ## Type Definitions
@@ -161,7 +161,7 @@ interface OpenApiSpecOptions {
 
 ## Operations and Tools
 
-### `McpifyOperation`
+### `QuickMcpOperation`
 
 Represents a single OpenAPI operation converted to MCP format.
 

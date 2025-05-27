@@ -1,0 +1,89 @@
+scenarios:
+  # Basic Discovery
+  - name: "Tool Discovery"
+    prompt: "What tools are available? Please list all the tools you can use."
+    expect:
+      - response_contains: ["tool", "available"]
+      - tool_count: ">= 1"
+      - no_errors: true
+
+  - name: "Resource Discovery"
+    prompt: "What resources or data can I access through this API? Show me what's available."
+    expect:
+      - response_contains: ["resource", "data", "available"]
+      - no_errors: true
+
+  # Functional Testing
+  - name: "Basic Tool Usage"
+    prompt: "Use the first available tool to show me how it works with some example data."
+    expect:
+      - tool_count: ">= 1"
+      - response_time: "< 15s"
+      - no_errors: true
+
+  - name: "Multi-step Operation"
+    prompt: "Perform a sequence of operations using multiple tools to accomplish a complex task."
+    expect:
+      - tool_count: ">= 2"
+      - response_time: "< 30s"
+      - no_errors: true
+
+  # Data Validation
+  - name: "Data Retrieval and Validation"
+    prompt: "Get some data from the API and validate that it has the expected structure and fields."
+    expect:
+      - tool_count: ">= 1"
+      - response_contains: ["data", "field", "structure"]
+      - no_errors: true
+
+  - name: "Parameter Handling"
+    prompt: "Test different parameter combinations with the available tools to see how they respond."
+    expect:
+      - tool_count: ">= 1"
+      - response_contains: ["parameter", "response"]
+      - no_errors: true
+
+  # Error Handling
+  - name: "Error Handling Test"
+    prompt: "Try to access something that doesn't exist or use invalid parameters to test error handling."
+    expect:
+      - tool_count: ">= 1"
+      - response_contains: ["error", "not found", "invalid", "failed"]
+
+  - name: "Edge Case Testing"
+    prompt: "Test edge cases like empty inputs, very long strings, or unusual parameter values."
+    expect:
+      - tool_count: ">= 1"
+      - response_time: "< 20s"
+
+  # Performance and Quality
+  - name: "Performance Test"
+    prompt: "Execute several operations quickly to test the performance and responsiveness of the API."
+    expect:
+      - tool_count: ">= 2"
+      - response_time: "< 25s"
+      - no_errors: true
+
+  - name: "Documentation Quality"
+    prompt: "Examine the available tools and provide feedback on their documentation and usability."
+    expect:
+      - response_contains: ["documentation", "tool", "usability"]
+      - response_quality: "> 0.7"
+      - no_errors: true
+
+  # Integration Testing
+  - name: "Workflow Simulation"
+    prompt: "Simulate a real-world workflow using the API tools in a logical sequence."
+    expect:
+      - tool_count: ">= 3"
+      - response_time: "< 45s"
+      - response_quality: "> 0.8"
+      - no_errors: true
+
+  - name: "API Exploration"
+    prompt: "Explore the full capabilities of this API and summarize what you discovered."
+    expect:
+      - tool_count: ">= 2"
+      - response_contains: ["capability", "API", "summary"]
+      - response_quality: "> 0.7"
+      - no_errors: true

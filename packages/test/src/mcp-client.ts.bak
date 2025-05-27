@@ -1,0 +1,266 @@
+/**
+ * MCP Client for connecting to Quick-MCP servers
+ */
+
+import { spawn } from 'child_process';
+import type { ChildProcess } from 'child_process';
+
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+
+import type { MCPConnection, MCPTool, MCPResource } from './types.ts';
+
+export class MCPClient {
+  #client: Client | null = null;
+  #transport: StdioClientTransport | SSEClientTransport | null = null;
+  #serverProcess: ChildProcess | null = null;
+  #connection: MCPConnection | null = null;
+  #serverUrl?: string;
+
+  constructor(serverUrl?: string) {
+    this.#serverUrl = serverUrl;
+  }
+
+  /**
+   * Connect to Quick-MCP server
+   */
+  async connect(specUrl: string): Promise<MCPConnection> {
+    try {
+      if (this.#serverUrl) {
+        // Connect to existing server via HTTP/SSE
+        await this.#connectToExistingServer();
+      } else {
+        // Start new Quick-MCP server process
+        await this.#startServerProcess(specUrl);
+      }
+
+      // Initialize MCP connection
+      await this.#initializeMCPConnection();
+      
+      if (!this.#connection) {
+        throw new Error('Failed to establish connection');
+      }
+      return this.#connection;
+    } catch (error) {
+      await this.disconnect();
+      throw new Error(`Failed to connect to MCP server: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  /**
+   * Get available tools
+   */
+  async getTools(): Promise<MCPTool[]> {
+    if (!this.#client) {
+      throw new Error('Not connected to MCP server');
+    }
+
+    const response = await this.#client.listTools();
+    return response.tools.map(tool => ({
+      name: tool.name,
+      description: tool.description ?? '',
+      inputSchema: tool.inputSchema,
+      ...(tool.annotations && { annotations: tool.annotations }),
+    }));
+  }
+
+  /**
+   * Get available resources
+   */
+  async getResources(): Promise<MCPResource[]> {
+    if (!this.#client) {
+      throw new Error('Not connected to MCP server');
+    }
+
+    const response = await this.#client.listResources();
+    return response.resources.map(resource => ({
+      uri: resource.uri,
+      name: resource.name,
+      ...(resource.description && { description: resource.description }),
+      ...(resource.mimeType && { mimeType: resource.mimeType }),
+    }));
+  }
+
+  /**
+   * Call a tool
+   */
+  async callTool(name: string, args: Record<string, unknown>): Promise<unknown> {
+    if (!this.#client) {
+      throw new Error('Not connected to MCP server');
+    }
+
+    const response = await this.#client.callTool({ name, arguments: args });
+    return response.content;
+  }
+
+  /**
+   * Read a resource
+   */
+  async readResource(uri: string): Promise<unknown> {
+    if (!this.#client) {
+      throw new Error('Not connected to MCP server');
+    }
+
+    const response = await this.#client.readResource({ uri });
+    return response.contents;
+  }
+
+  /**
+   * Disconnect from server
+   */
+  async disconnect(): Promise<void> {
+    try {
+      if (this.#client) {
+        await this.#client.close();
+        this.#client = null;
+      }
+
+      if (this.#transport) {
+        await this.#transport.close();
+        this.#transport = null;
+      }
+
+      if (this.#serverProcess) {
+        this.#serverProcess.kill('SIGTERM');
+        this.#serverProcess = null;
+      }
+
+      this.#connection = null;
+    } catch (error) {
+      // Log but don't throw on cleanup
+      console.warn('Warning during MCP client cleanup:', error);
+    }
+  }
+
+  /**
+   * Check if connected
+   */
+  get isConnected(): boolean {
+    return this.#client !== null && this.#connection !== null;
+  }
+
+  /**
+   * Get connection info
+   */
+  get connection(): MCPConnection | null {
+    return this.#connection;
+  }
+
+  /**
+   * Connect to existing Quick-MCP server via HTTP/SSE
+   */
+  async #connectToExistingServer(): Promise<void> {
+    if (!this.#serverUrl) {
+      throw new Error('Server URL required for existing server connection');
+    }
+
+    // Use SSE transport for HTTP connections
+    this.#transport = new SSEClientTransport(new URL(this.#serverUrl));
+    this.#client = new Client({
+      name: 'quick-mcp-test',
+      version: '0.1.0',
+    }, {
+      capabilities: {
+        tools: {},
+        resources: {},
+      },
+    });
+
+    await this.#client.connect(this.#transport);
+  }
+
+  /**
+   * Start new Quick-MCP server process
+   */
+  async #startServerProcess(specUrl: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Start Quick-MCP server as child process
+      const cliPath = new URL('../../core/src/cli.ts', import.meta.url).pathname;
+      const args = [
+        '--experimental-strip-types',
+        cliPath,
+        '--spec', specUrl,
+        '--transport', 'stdio',
+      ];
+
+      console.log('Starting Quick-MCP with args:', ['node', ...args]);
+      
+      try {
+        this.#serverProcess = spawn('node', args, {
+          stdio: ['pipe', 'pipe', 'pipe'],
+          env: process.env,
+          cwd: process.cwd(),
+        });
+      } catch (error) {
+        console.error('Direct spawn error:', error);
+        throw error;
+      }
+
+      // Handle process errors
+      this.#serverProcess.on('error', (error) => {
+        console.error('Spawn error:', error);
+        reject(new Error(`Failed to start Quick-MCP server: ${error.message}`));
+      });
+
+      this.#serverProcess.on('exit', (code, _signal) => {
+        if (code !== 0 && code !== null) {
+          reject(new Error(`Quick-MCP server exited with code ${code}`));
+        }
+      });
+
+      // Create STDIO transport  
+      if (!this.#serverProcess.stdout || !this.#serverProcess.stdin) {
+        throw new Error('Server process streams not available');
+      }
+      this.#transport = new StdioClientTransport({
+        reader: this.#serverProcess.stdout,
+        writer: this.#serverProcess.stdin,
+      });
+
+      this.#client = new Client({
+        name: 'quick-mcp-test',
+        version: '0.1.0',
+      }, {
+        capabilities: {
+          tools: {},
+          resources: {},
+        },
+      });
+
+      // Connect via STDIO
+      this.#client.connect(this.#transport)
+        .then(() => { resolve(); })
+        .catch(reject);
+
+      // Give server a moment to start
+      setTimeout(() => {
+        if (!this.#client) {
+          reject(new Error('Failed to establish MCP connection'));
+        }
+      }, 5000);
+    });
+  }
+
+  /**
+   * Initialize MCP connection and discover capabilities
+   */
+  async #initializeMCPConnection(): Promise<void> {
+    if (!this.#client) {
+      throw new Error('MCP client not initialized');
+    }
+
+    // Discover tools and resources
+    const [tools, resources] = await Promise.all([
+      this.getTools(),
+      this.getResources(),
+    ]);
+
+    this.#connection = {
+      url: this.#serverUrl ?? 'stdio',
+      tools,
+      resources,
+      connected: true,
+    };
+  }
+}

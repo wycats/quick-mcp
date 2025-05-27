@@ -47,8 +47,6 @@ export interface TransportInfo {
 // Export transport implementations
 export { HttpTransport } from './http.ts';
 export { StdioTransport } from './stdio.ts';
-export { createTransport, TransportFactory } from './factory.ts';
+export { createTransport } from './factory.ts';
 export type { TransportType } from '../config.ts';
 
-// Re-export monitoring types that were previously here
-export type { SafetyStats } from '../monitoring/stats.ts';

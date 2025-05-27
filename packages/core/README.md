@@ -19,8 +19,9 @@ This allows AI agents to use existing REST APIs as if they were native MCP tools
 - 🔄 Dynamic tool & resource generation
 - 🌐 Base URL overrides and custom headers
 - 🔍 Response validation & schema conversion
-- 🛡️ Authentication forwarding
-- 🐞 Web-based debug UI at `/debug`
+- 🛡️ Authentication forwarding via headers
+- 🚀 HTTP and STDIO transport support
+- 🔧 Environment-based configuration (12-factor app)
 
 ## 📦 Installation
 
@@ -187,6 +188,8 @@ When multiple content types are available for a response, Quick-MCP selects the 
 > the version of JSON Schema supported by OpenAPI 3.1. That minimizes the need
 > for automatic conversions, which rely on heuristics.
 
+### 🔄 Automatic Conversions
+
 > [!IMPORTANT]
 >
 > If you don't like the automatic conversions, you can use the `x-quick-mcp`
@@ -205,7 +208,7 @@ When multiple content types are available for a response, Quick-MCP selects the 
 
 ## ⚙️ Configuration
 
-### 📝 Using x-quick-mcp Extensions and Proxy Configuration
+### 📝 Using x-quick-mcp Extensions
 
 Configure custom behavior using the `x-quick-mcp` extension at different levels in your OpenAPI spec:
 
@@ -219,20 +222,12 @@ x-quick-mcp:
   templates:
     default:
       description: '{summary} ({description})'
-  proxy:
-    timeout: 30 # Request timeout in seconds
-    retries: 3 # Number of retry attempts
-    caching:
-      enabled: true
-      ttl: 300 # Cache TTL in seconds
 
 # Path level configuration
 paths:
   /users:
     x-quick-mcp:
       include: [tools, resources]
-      proxy:
-        timeout: 60 # Override timeout for this path
 
   # Operation level configuration
   /users/{id}:
@@ -241,22 +236,37 @@ paths:
         operationId: 'user_by_id' # Override name
         annotations: # Custom annotations
           readOnlyHint: false # Override default
-        proxy:
-          caching: # Operation-specific cache settings
-            ttl: 600
+        ignore: false # Explicitly enable (default)
 ```
 
-Alternatively, you can provide proxy-specific configuration via command-line flags:
+### 🌍 Environment Variables
+
+Quick-MCP supports 12-factor app configuration via environment variables:
 
 ```bash
-# Configure proxy timeout and retries
-quick-mcp --spec api-spec.yaml --timeout 60 --retries 3
+# Required
+export OPENAPI_SPEC_URL="https://api.example.com/openapi.json"
 
-# Enable response caching
-quick-mcp --spec api-spec.yaml --cache-ttl 300
+# Optional
+export BASE_URL="https://api.example.com"
+export PORT="8080"
+export LOG_LEVEL="info"
+export TRANSPORT="http"  # or "stdio"
+export AUTH_HEADERS='{"Authorization": "Bearer token", "X-API-Key": "key"}'
+```
 
-# Set custom headers for all proxied requests
-quick-mcp --spec api-spec.yaml --header "User-Agent: Quick-MCP/1.0" --header "X-Custom: Value"
+Then run with environment configuration:
+
+```bash
+# Configure proxy with CLI options
+quick-mcp --spec api-spec.yaml --port 9000 --log-level debug
+
+# Set custom headers for authentication and other purposes
+quick-mcp --spec api-spec.yaml --header "Authorization: Bearer TOKEN" \
+  --header "User-Agent: Quick-MCP/1.0"
+
+# Use environment variables for 12-factor app deployment
+quick-mcp --env
 ```
 
 ### 🚫 Opting Out
@@ -267,12 +277,13 @@ Disable automatic conversion for specific endpoints:
 paths:
   /internal/metrics:
     get:
-      x-quick-mcp: false # Disable completely
+      x-quick-mcp:
+        ignore: true # Disable completely
 
   /users/{id}:
     get:
       x-quick-mcp:
-        map: ['tool'] # Only create tool, not resource
+        ignore: 'resource' # Only create tool, not resource
 ```
 
 ## 📚 Examples
@@ -326,7 +337,7 @@ paths:
 }
 ```
 
-### 🔒 Complex Scenario: Authentication
+### 🔒 Authentication Forwarding
 
 **OpenAPI Input with Security:**
 
@@ -347,32 +358,23 @@ paths:
       summary: Get a secure resource
 ```
 
-**Dynamically Generated MCP Tool with Auth:**
+**Authentication via CLI Headers:**
 
-```json
-{
-  "name": "getSecureResource",
-  "description": "Get a secure resource - Requires API Key authentication",
-  "inputSchema": {
-    "type": "object",
-    "required": ["apiKey"],
-    "properties": {
-      "apiKey": {
-        "type": "string",
-        "description": "API Key for authentication"
-      }
-    }
-  },
-  "annotations": {
-    "readOnlyHint": true,
-    "authentication": {
-      "type": "apiKey",
-      "location": "header",
-      "name": "X-API-Key"
-    }
-  }
-}
+```bash
+# Forward authentication headers to the backend API
+quick-mcp --spec api-spec.yaml \
+  --header "X-API-Key: your-api-key" \
+  --header "Authorization: Bearer your-token"
 ```
+
+**Authentication via Environment Variables:**
+
+```bash
+export AUTH_HEADERS='{"X-API-Key": "your-api-key", "Authorization": "Bearer your-token"}'
+quick-mcp --env
+```
+
+The MCP tool will be created normally, and Quick-MCP will automatically forward the configured headers to the backend API on each request.
 
 ## 🔄 MCP Proxy Features
 
@@ -388,30 +390,24 @@ Quick-MCP intelligently converts between MCP tool calls and REST API requests:
 
 4. **Authentication Forwarding**: Securely forwards authentication tokens from MCP clients to the underlying REST API
 
-### Debugging and Monitoring
-
-Quick-MCP includes a web-based debugging interface at `/debug` that provides:
-
-- Real-time request/response logging
-- Tool mapping visualization
-- Performance metrics for proxied requests
-- Schema conversion inspection
-
 ## 🧩 Integration with AI Agents
 
 Quick-MCP makes it easy to connect existing REST APIs to AI agents that support the MCP protocol, effectively turning any API into a tool the agent can use:
 
 ```bash
-# Start Quick-MCP proxy to convert Stripe API to MCP
-quick-mcp --spec https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json \
+# Start Quick-MCP proxy to convert an API to MCP
+quick-mcp --spec https://api.example.com/openapi.json \
        --header "Authorization: Bearer sk_test_123" \
        --port 8080
 
-# Connect your AI agent to the MCP proxy
-ai-agent --mcp-server http://localhost:8080
+# Or using environment variables
+export OPENAPI_SPEC_URL="https://api.example.com/openapi.json"
+export AUTH_HEADERS='{"Authorization": "Bearer sk_test_123"}'
+export PORT="8080"
+quick-mcp --env
 ```
 
-Now your AI agent can directly use Stripe API endpoints as MCP tools without any additional implementation.
+Now your AI agent can connect to the MCP server and use the API endpoints as MCP tools without any additional implementation.
 
 ## 👥 Contributing
 

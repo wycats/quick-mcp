@@ -97,6 +97,30 @@ back to MCP format.
 - Use `pnpm vitest packages/core/src/specific-file.test.ts` for single test
   files
 
+## AI Model Provider Guidelines
+
+### Provider Decision Tree
+When integrating with AI SDK for @quick-mcp/test:
+
+1. **Check for dedicated provider first** (e.g., `@ai-sdk/anthropic`, `ollama-ai-provider`)
+2. **Then consider OpenAI-compatible** only if no dedicated option exists  
+3. **Always test tool calling specifically** - compatibility varies by feature
+4. **Use provider verification**: `pnpm quick-mcp-test verify-provider <model>`
+
+### Tool Calling Troubleshooting
+Before debugging model capabilities:
+
+- [ ] Are you using the correct provider adapter?
+- [ ] Does the model officially support tool calling?
+- [ ] Are you testing with the simplest possible case first?
+- [ ] Have you verified the tool schema format matches the provider's expectations?
+
+### Provider-Specific Notes
+- **Ollama**: Use `ollama-ai-provider`, not `createOpenAI()` - only certain models support tools (llama3.1, mistral-nemo, firefunction-v2, command-r+)
+- **Anthropic**: Use `@ai-sdk/anthropic`, not OpenAI compatibility  
+- **Local Models**: Check provider docs for tool calling support matrix
+- **OpenAI**: Use `@ai-sdk/openai` for best tool calling support
+
 ## Common Development Patterns
 
 **Extension System**: Use `x-quick-mcp` extensions in OpenAPI specs to customize
@@ -177,3 +201,4 @@ For detailed guidelines, see `.windsurf/rules/` directory.
   I especially don't want you to disable safety-related ESLint rules.
 - Don't include Claude costs in documentation or summaries that we check into
   version control
+- Don't include Claude attribution in commit messages
