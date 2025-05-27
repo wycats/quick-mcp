@@ -97,8 +97,9 @@ export class ResponseSchemaExtractor {
    */
   get schemas(): Record<string, JSONSchema> {
     return Object.fromEntries(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this.statusCodes.map((code) => [code, this.getSchema(code)!]),
+      this.statusCodes
+        .map((code) => [code, this.getSchema(code)])
+        .filter(([, schema]) => schema !== null) as [string, JSONSchema][],
     );
   }
 

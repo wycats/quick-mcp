@@ -91,23 +91,7 @@ export function createServerConfig(
   
   // Add environment auth headers if present
   if (env.AUTH_HEADERS) {
-    try {
-      // Parse JSON headers inline (simplified from utils/headers.ts)
-      const parsed = JSON.parse(env.AUTH_HEADERS);
-      if (typeof parsed !== 'object' || parsed === null) {
-        throw createConfigurationError('AUTH_HEADERS must be a JSON object');
-      }
-      
-      for (const [key, value] of Object.entries(parsed)) {
-        if (typeof value !== 'string') {
-          throw createConfigurationError(`Header value for "${key}" must be a string`);
-        }
-        headers.set(key, value);
-      }
-    } catch (error) {
-      // Re-throw with better context from the simple error function
-      throw error;
-    }
+    parseAuthHeaders(env.AUTH_HEADERS, headers);
   }
   
   // Merge with override headers
@@ -163,6 +147,30 @@ export function createEnvironmentConfig(
   }
   
   return createServerConfig(app, overrides);
+}
+
+/**
+ * Parse JSON-formatted auth headers from environment
+ */
+function parseAuthHeaders(authHeadersJson: string, targetHeaders: Headers): void {
+  try {
+    const parsed = JSON.parse(authHeadersJson);
+    if (typeof parsed !== 'object' || parsed === null) {
+      throw createConfigurationError('AUTH_HEADERS must be a JSON object');
+    }
+    
+    for (const [key, value] of Object.entries(parsed)) {
+      if (typeof value !== 'string') {
+        throw createConfigurationError(`Header value for "${key}" must be a string`);
+      }
+      targetHeaders.set(key, value);
+    }
+  } catch (error) {
+    if (error instanceof Error && error.name === 'SyntaxError') {
+      throw createConfigurationError(`Invalid JSON in AUTH_HEADERS: ${error.message}`);
+    }
+    throw error;
+  }
 }
 
 /**

@@ -1,7 +1,5 @@
 /**
- * Simple type aliases and validation functions
- * 
- * These replace the over-engineered domain objects with simple types
+ * Type aliases and validation functions for branded types
  */
 
 import type { Tagged } from 'type-fest';
