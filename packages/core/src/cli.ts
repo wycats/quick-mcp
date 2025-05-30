@@ -46,6 +46,11 @@ export function createCLI(): Command {
         .choices(['http', 'stdio'] as const)
         .default('http' as TransportType),
     )
+    .addOption(
+      new Option('--timeout <ms>', 'Request timeout in milliseconds')
+        .argParser((value) => parseInt(value, 10))
+        .default(30000),
+    )
     .option('--env', 'Load configuration from environment variables (12-factor app mode)')
     .action(async (options) => {
       const server = options.env
@@ -56,6 +61,7 @@ export function createCLI(): Command {
             headers: options.header,
             transport: options.transport,
             ...(options.baseUrl ? { baseUrl: options.baseUrl } : {}),
+            ...(options.timeout ? { requestTimeoutMs: options.timeout } : {}),
           })
         : // Traditional CLI mode
           await createServer({
@@ -65,6 +71,7 @@ export function createCLI(): Command {
             port: validatePort(options.port),
             headers: options.header,
             ...(options.baseUrl && { baseUrl: options.baseUrl }),
+            ...(options.timeout && { requestTimeoutMs: options.timeout }),
           });
 
       // Start the proxy server with the chosen transport

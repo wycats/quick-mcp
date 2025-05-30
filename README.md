@@ -8,112 +8,83 @@ automatically generating MCP-compatible interfaces from OpenAPI specifications.
 This enables AI agents to interact with any API that has an OpenAPI spec without
 requiring custom integration code.
 
-## Core Features
+## 📦 Packages
 
-- ✅ **Dynamic Proxy Architecture**: Real-time OpenAPI → MCP conversion without
-  code generation
-- ✅ **Smart Resource Classification**: GET operations become resources, others
-  become tools
-- ✅ **Parameter Mapping**: Automatic conversion between MCP arguments and REST
-  API parameters
-- ✅ **HTTP Transport**: Full support for MCP over HTTP with configurable
-  timeouts
-- ✅ **STDIO Transport**: Command-line integration for desktop AI assistants
-- ✅ **Authentication Forwarding**: Header-based auth support for secured APIs
-- ✅ **Production Hardening**: Error boundaries, timeouts, and comprehensive
-  testing (58% coverage)
+This is a TypeScript monorepo containing:
 
-## Key Benefits
+- **[@quick-mcp/core](./packages/core/)** - Main library and CLI
+- **[@quick-mcp/test](./packages/test/)** - LLM-powered testing framework
+- **[@quick-mcp/demo](./packages/demo/)** - Example API server for testing
+
+## ✨ Key Features
+
+- **Dynamic Proxy Architecture**: Real-time OpenAPI → MCP conversion
+- **Smart Resource Classification**: GET operations → resources, others → tools
+- **Parameter Mapping**: Automatic MCP ↔ REST API conversion
+- **Dual Transport Support**: HTTP and STDIO transports
+- **Authentication Forwarding**: Secure header-based auth
+- **Production Ready**: Comprehensive error handling and testing (63% coverage)
+- **Developer Experience**: Rich CLI, environment config, detailed logging
+
+## 🎯 Use Cases
 
 **For AI Assistant Developers:**
-
-- Instantly connect to any API with OpenAPI documentation
+- Connect to any OpenAPI-documented API instantly
 - No custom MCP server development required
 - Automatic parameter validation and error handling
 
 **For API Providers:**
-
-- Make your API AI-accessible without code changes
-- Leverage existing OpenAPI specifications
+- Make existing APIs AI-accessible without code changes
+- Leverage current OpenAPI documentation
 - Maintain security through authentication forwarding
 
 **For Platform Builders:**
-
 - Bootstrap MCP ecosystems from existing API catalogs
-- Enable AI integration at any scale
-- Support development workflows through production deployment
+- Scale AI integration across multiple APIs
+- Support development through production deployment
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### For Users
 
-- Node.js 18+
-- pnpm
+Install and use the CLI:
 
-### Try the Demo
+```bash
+npm install -g @quick-mcp/core
+quick-mcp --spec https://api.example.com/openapi.json
+```
+
+**👉 [See full usage docs](./packages/core/README.md)**
+
+### For Developers
+
+Clone and explore the demo:
 
 ```bash
 # Clone and install
-git clone <repository-url>
+git clone https://github.com/wycats/quick-mcp.git
 cd quick-mcp
 pnpm install
 
 # Terminal 1: Start demo API server
 pnpm dev:demo
 
-# Terminal 2: Start Quick-MCP proxy (after demo is running)
-pnpm dev --spec http://localhost:3001/api-docs.json --port 8080 --transport http
+# Terminal 2: Start Quick-MCP proxy
+pnpm dev --spec http://localhost:3001/api-docs.json
 ```
 
 The demo converts a sample OpenAPI spec into MCP tools that can be used by
 Claude or other MCP clients.
 
-### Use with Your API
+## 🏗️ Development
 
-```bash
-# Start Quick-MCP pointing to your OpenAPI spec
-pnpm dev --spec https://your-api.com/openapi.json --port 8080 --transport http
-```
+### Prerequisites
 
-## How It Works
+- Node.js 18+
+- pnpm
+- An OpenAPI specification for testing
 
-Quick-MCP acts as a dynamic proxy that converts OpenAPI specifications into
-MCP-compatible interfaces:
-
-```mermaid
-graph LR
-    A[OpenAPI Spec] --> B[Quick-MCP Server]
-    B --> C[MCP Tools & Resources]
-    C --> D[AI Assistant]
-    B --> E[REST API Calls]
-    E --> F[Target API]
-```
-
-### Conversion Process
-
-1. **Specification Loading**: Validates and parses OpenAPI 3.0 specifications
-2. **Operation Classification**:
-   - GET operations with path-only parameters → MCP Resources
-   - All other operations → MCP Tools
-3. **Parameter Mapping**: Converts between MCP JSON arguments and REST API
-   parameters
-4. **Request Proxying**: Forwards tool calls as authenticated HTTP requests
-5. **Response Formatting**: Transforms API responses for MCP clients
-
-### Architecture
-
-- **Dynamic Proxy Pattern**: No static code generation - live conversion at
-  runtime
-- **Operation-Centric Design**: Each OpenAPI operation becomes an MCP tool or
-  resource
-- **Transport Agnostic**: Supports both HTTP and STDIO MCP connections
-- **Production Ready**: Built for reliability with error handling and monitoring
-  hooks
-
-## Development
-
-See [DEVELOPMENT_PRACTICES.md](DEVELOPMENT_PRACTICES.md) for development
-workflows and AI-assisted coding practices.
+### Setup
 
 ```bash
 # Install dependencies
@@ -122,28 +93,121 @@ pnpm install
 # Run tests
 pnpm test
 
-# Build
+# Build packages
 pnpm build
 
-# Lint
+# Start demo environment
+pnpm dev:demo
+```
+
+### Project Structure
+
+```
+quick-mcp/
+├── packages/
+│   ├── core/           # Main library and CLI
+│   ├── test/           # LLM testing framework
+│   └── demo/           # Example API server
+├── tests/              # Integration tests
+├── docs/               # Additional documentation
+└── README.md          # This file
+```
+
+## 🔄 How It Works
+
+Quick-MCP creates a live proxy between OpenAPI APIs and MCP clients:
+
+```mermaid
+graph LR
+    A[AI Assistant] -->|MCP Protocol| B[Quick-MCP]
+    B -->|HTTP Requests| C[Your API]
+    C -->|JSON Response| B
+    B -->|MCP Response| A
+    
+    D[OpenAPI Spec] -.->|Configure| B
+```
+
+### Conversion Process
+
+1. **Load OpenAPI Spec**: Parse and validate OpenAPI 2.0/3.0 specifications
+2. **Classify Operations**:
+   - GET operations → MCP Resources (for data retrieval)
+   - POST/PUT/DELETE → MCP Tools (for actions)
+3. **Generate MCP Interface**: Create tools/resources with proper schemas
+4. **Handle Requests**: Convert MCP calls to REST API requests
+5. **Return Responses**: Transform API responses back to MCP format
+
+## 🤝 Contributing
+
+We welcome contributions! Please see:
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
+- [DEVELOPMENT_PRACTICES.md](DEVELOPMENT_PRACTICES.md) - Development workflows
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
+
+### Development Commands
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run tests
+pnpm test
+pnpm test:coverage
+
+# Build packages
+pnpm build
+
+# Code quality
 pnpm lint
+pnpm lint:fix
+
+# Start demo environment
+pnpm dev:demo
 ```
 
-## Use Cases
+## 📚 Documentation
 
-### AI-Powered API Testing
+- **[API Reference](API.md)** - Complete API documentation
+- **[Architecture Guide](ARCHITECTURE.md)** - System design and patterns
+- **[Development Practices](DEVELOPMENT_PRACTICES.md)** - Coding standards and workflows
+- **[Package Documentation](packages/core/README.md)** - Core package usage
 
-```bash
-# Convert any API to MCP for AI-assisted testing
-quick-mcp --spec https://api.github.com/openapi.json \
-  --auth-header "Authorization: token $GITHUB_TOKEN"
+## 🚀 Deployment
+
+### Docker
+
+```dockerfile
+FROM node:18-alpine
+RUN npm install -g @quick-mcp/core
+EXPOSE 8080
+CMD ["quick-mcp", "--spec", "/app/openapi.json", "--env"]
 ```
 
-### Development Workflow Integration
+### Heroku
 
 ```bash
-# Enable AI assistants to interact with your development APIs
-quick-mcp --spec http://localhost:3000/api-docs.json \
+heroku config:set OPENAPI_SPEC_URL="https://your-api.com/openapi.json"
+heroku config:set PORT="8080"
+git push heroku main
+```
+
+## 📊 Project Status
+
+- **Test Coverage**: 63% (Core package)
+- **TypeScript**: Strict mode enabled
+- **Production Ready**: Error handling, timeouts, logging
+- **Actively Maintained**: Regular updates and improvements
+
+## 🔗 Links
+
+- [Issues](https://github.com/wycats/quick-mcp/issues) - Bug reports and feature requests
+- [Discussions](https://github.com/wycats/quick-mcp/discussions) - Community discussions
+- [Releases](https://github.com/wycats/quick-mcp/releases) - Release notes and downloads
+
+## 📄 License
+
+MIT - see [LICENSE](LICENSE) file for details.
   --base-url http://localhost:3000
 ```
 

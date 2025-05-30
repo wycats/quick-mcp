@@ -3,6 +3,19 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with
 code in this repository.
 
+## Core Principle: Think Before Acting
+
+**Before implementing any solution:**
+
+1. Take a step back and think through the problem
+2. Make sure you're actually focused on the right thing
+3. If you're not sure, ASK - don't guess
+4. If you're hitting a problem, get to the bottom of it rather than mashing on
+   it until it works
+
+This principle prevents "vibe coding" and ensures explicit, thoughtful
+decisions.
+
 ## Project Overview
 
 Quick-MCP is a dynamic proxy server that converts OpenAPI specifications into
@@ -100,24 +113,30 @@ back to MCP format.
 ## AI Model Provider Guidelines
 
 ### Provider Decision Tree
+
 When integrating with AI SDK for @quick-mcp/test:
 
-1. **Check for dedicated provider first** (e.g., `@ai-sdk/anthropic`, `ollama-ai-provider`)
-2. **Then consider OpenAI-compatible** only if no dedicated option exists  
+1. **Check for dedicated provider first** (e.g., `@ai-sdk/anthropic`,
+   `ollama-ai-provider`)
+2. **Then consider OpenAI-compatible** only if no dedicated option exists
 3. **Always test tool calling specifically** - compatibility varies by feature
 4. **Use provider verification**: `pnpm quick-mcp-test verify-provider <model>`
 
 ### Tool Calling Troubleshooting
+
 Before debugging model capabilities:
 
 - [ ] Are you using the correct provider adapter?
 - [ ] Does the model officially support tool calling?
 - [ ] Are you testing with the simplest possible case first?
-- [ ] Have you verified the tool schema format matches the provider's expectations?
+- [ ] Have you verified the tool schema format matches the provider's
+      expectations?
 
 ### Provider-Specific Notes
-- **Ollama**: Use `ollama-ai-provider`, not `createOpenAI()` - only certain models support tools (llama3.1, mistral-nemo, firefunction-v2, command-r+)
-- **Anthropic**: Use `@ai-sdk/anthropic`, not OpenAI compatibility  
+
+- **Ollama**: Use `ollama-ai-provider`, not `createOpenAI()` - only certain
+  models support tools (llama3.1, mistral-nemo, firefunction-v2, command-r+)
+- **Anthropic**: Use `@ai-sdk/anthropic`, not OpenAI compatibility
 - **Local Models**: Check provider docs for tool calling support matrix
 - **OpenAI**: Use `@ai-sdk/openai` for best tool calling support
 
@@ -166,9 +185,12 @@ requirements are unclear.
   no `any` type, explicit return types
 - **Testing**: No mocks policy - use factory functions and real implementations
   with controlled inputs. Tests must meet same quality standards as production
-  code
+  code. Never mutate global state (like process.env) in tests - use interfaces
+  and dependency injection instead. Use SuperTest for HTTP server testing to
+  maintain real request/response flows without mocking
 - **Code Quality**: Follow existing patterns, use immutable approaches, never
-  suppress linting rules without explicit instruction
+  suppress linting rules without explicit instruction. Prefer interfaces and
+  dependency injection over global state mutation
 - **Dependencies**: Only use existing packages - request permission before
   adding new dependencies
 
@@ -194,6 +216,8 @@ For detailed guidelines, see `.windsurf/rules/` directory.
 
 - Don't use npx or pnpx to run local tools. Instead, use `pnpm` to run them in
   the workspace.
+- When making code changes, run `pnpm lint:fix` from the root directory to
+  automatically fix linting issues before building.
 
 ## Memories
 
@@ -201,4 +225,4 @@ For detailed guidelines, see `.windsurf/rules/` directory.
   I especially don't want you to disable safety-related ESLint rules.
 - Don't include Claude costs in documentation or summaries that we check into
   version control
-- Don't include Claude attribution in commit messages
+- Don't include Claude attribution in commit messages or any version control

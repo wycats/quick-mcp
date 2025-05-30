@@ -3,6 +3,7 @@ import type { LogLayer } from 'loglayer';
 import type { Operation } from 'oas/operation';
 import type { z } from 'zod';
 
+import { requestTimeoutError, networkRequestError } from './errors/index.ts';
 import { CustomExtensions } from './operation/custom-extensions.ts';
 import type { CustomExtensionsInterface } from './operation/custom-extensions.ts';
 import { QuickMcpOperation } from './operation/ext.ts';
@@ -59,10 +60,15 @@ export class OperationClient<T extends InvokeResult = InvokeResult> {
   /**
    * Invokes the operation as a tool call
    * @param args The arguments to pass to the operation
+   * @param bearerToken Optional bearer token for authentication
    * @returns A CallToolResult object representing the response
    */
-  async invoke(args: z.objectOutputType<z.ZodRawShape, z.ZodTypeAny>): Promise<T> {
-    const response = await executeRequest(this.#operation, this.#app, args);
+  async invoke(
+    args: z.objectOutputType<z.ZodRawShape, z.ZodTypeAny>,
+    bearerToken?: string,
+    timeoutMs?: number,
+  ): Promise<T> {
+    const response = await executeRequest(this.#operation, this.#app, args, bearerToken, timeoutMs);
 
     return this.#invoke(response);
   }
@@ -96,9 +102,10 @@ export async function executeRequest(
   operation: QuickMcpOperation,
   app: { log: LogLayer },
   args: z.objectOutputType<z.ZodRawShape, z.ZodTypeAny>,
+  bearerToken?: string,
   timeoutMs = 30000, // Default 30 second timeout
 ): Promise<Response> {
-  const request = buildRequest(app, operation, args);
+  const request = buildRequest(app, operation, args, bearerToken);
   
   // Create an AbortController for timeout handling
   const controller = new AbortController();
@@ -117,9 +124,23 @@ export async function executeRequest(
     clearTimeout(timeoutId);
     
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`Request timed out after ${timeoutMs}ms`);
+      throw requestTimeoutError(
+        {
+          id: operation.id,
+          method: operation.verb.uppercase,
+          path: operation.path,
+        },
+        timeoutMs
+      );
     }
     
-    throw error;
+    throw networkRequestError(
+      {
+        id: operation.id,
+        method: operation.verb.uppercase,
+        path: operation.path,
+      },
+      error
+    );
   }
 }

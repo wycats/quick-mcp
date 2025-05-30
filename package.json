@@ -43,6 +43,7 @@
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^10.1.2",
     "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
     "markdownlint-cli": "^0.45.0",
     "prettier": "^3.5.3",
     "publint": "^0.3.12",

@@ -146,6 +146,50 @@ export function invalidValidationResultError(validation: unknown): QuickMcpError
 }
 
 // ============================================================================
+// Network Errors
+// ============================================================================
+
+export function createNetworkError(
+  message: string,
+  context?: Record<string, unknown>
+): QuickMcpError {
+  return new QuickMcpError(message, { 
+    code: 'NETWORK_ERROR', 
+    context 
+  });
+}
+
+export function requestTimeoutError(
+  operation: { id: string; method: string; path: string },
+  timeoutMs: number
+): QuickMcpError {
+  return createNetworkError(
+    `Request timeout after ${timeoutMs}ms: ${operation.method} ${operation.path}`,
+    { 
+      operationId: operation.id,
+      method: operation.method,
+      path: operation.path,
+      timeoutMs 
+    }
+  );
+}
+
+export function networkRequestError(
+  operation: { id: string; method: string; path: string },
+  cause: unknown
+): QuickMcpError {
+  return createNetworkError(
+    `Network request failed: ${operation.method} ${operation.path}`,
+    { 
+      operationId: operation.id,
+      method: operation.method,
+      path: operation.path,
+      cause 
+    }
+  );
+}
+
+// ============================================================================
 // Server Errors
 // ============================================================================
 

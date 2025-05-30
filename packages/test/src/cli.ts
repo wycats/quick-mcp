@@ -9,9 +9,9 @@ import chalk from 'chalk';
 import { program } from 'commander';
 import ora from 'ora';
 
+import { verifyProvider } from './provider-verification.ts';
 import { createReporter } from './reporter.ts';
 import { loadScenarios } from './scenario-parser.ts';
-import { verifyProvider } from './provider-verification.ts';
 import { TestRunner } from './test-runner.ts';
 import type { TestConfig, CLIOptions } from './types.ts';
 

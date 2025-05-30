@@ -2,6 +2,7 @@ import typescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import prettier from 'eslint-config-prettier';
 import * as importPlugin from 'eslint-plugin-import';
+import unusedImports from 'eslint-plugin-unused-imports';
 
 import customRules from './eslint-rules/index.js';
 
@@ -48,6 +49,7 @@ export default [
     plugins: {
       '@typescript-eslint': typescript,
       'custom': customRules,
+      'unused-imports': unusedImports,
     },
     rules: {
       // Using TypeScript ESLint plugin's recommended, strict, and strict-type-checked rules as a base
@@ -65,7 +67,10 @@ export default [
       // Additional TypeScript specific rules
 
       // TypeScript-specific rules
-      '@typescript-eslint/no-unused-vars': [
+      // Disable the base rule as it's handled by unused-imports
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
         'error',
         {
           argsIgnorePattern: '^_',
@@ -201,6 +206,7 @@ export default [
       '@typescript-eslint': typescript,
       import: importPlugin,
       'custom': customRules,
+      'unused-imports': unusedImports,
     },
     rules: {
       ...typescript.configs['recommended'].rules,
@@ -209,7 +215,9 @@ export default [
       ...typescript.configs['stylistic-type-checked'].rules,
 
       // Apply same strict rules as core package
-      '@typescript-eslint/no-unused-vars': [
+      '@typescript-eslint/no-unused-vars': 'off',
+      'unused-imports/no-unused-imports': 'error',
+      'unused-imports/no-unused-vars': [
         'error',
         {
           argsIgnorePattern: '^_',

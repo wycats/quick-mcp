@@ -173,7 +173,7 @@ expect.extend({
 /* --- Type declarations so TS recognises the matcher ------------- */
 declare module 'vitest' {
   // make it awaitable to avoid dangling promises
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   interface Assertion<T> {
     toMatchRequest(expected: ExpectedRequest): Promise<void>;
   }

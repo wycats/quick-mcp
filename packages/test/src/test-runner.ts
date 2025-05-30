@@ -70,7 +70,7 @@ export class TestRunner {
 
     const scenarios = Array.isArray(this.#config.scenarios) 
       ? this.#config.scenarios 
-      : await loadScenarios(this.#config.scenarios as string);
+      : await loadScenarios(this.#config.scenarios);
 
     const results: TestResult[] = [];
     const startTime = Date.now();

@@ -60,6 +60,7 @@
     "commander": "^13.1.0",
     "express": "^5.1.0",
     "fetch-har": "^11.1.1",
+    "is-what": "^5.2.1",
     "loglayer": "^6.3.3",
     "oas": "^27.0.0",
     "oas-normalize": "^14.0.0",

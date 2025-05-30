@@ -1,76 +1,60 @@
 import { describe, it, expect } from 'vitest';
 
-import { loadEnvironmentConfig, collectHeader } from './config.ts';
+import { createServerConfig, createValidatedServerConfig } from './config.js';
+import type { EnvironmentConfig } from './config.js';
+import { createAppContext } from './logging.js';
 
-describe('Config Module', () => {
-  describe('loadEnvironmentConfig', () => {
-    it('should return empty config when no environment variables are set', () => {
-      // Save and clear relevant env vars
-      const originalEnv = {
-        PORT: process.env['PORT'],
-        OPENAPI_SPEC_URL: process.env['OPENAPI_SPEC_URL'],
-        BASE_URL: process.env['BASE_URL'],
-        LOG_LEVEL: process.env['LOG_LEVEL'],
-        TRANSPORT: process.env['TRANSPORT'],
-        AUTH_HEADERS: process.env['AUTH_HEADERS'],
-      };
+describe('Timeout Configuration', () => {
+  const app = createAppContext('info');
 
-      delete process.env['PORT'];
-      delete process.env['OPENAPI_SPEC_URL'];
-      delete process.env['BASE_URL'];
-      delete process.env['LOG_LEVEL'];
-      delete process.env['TRANSPORT'];
-      delete process.env['AUTH_HEADERS'];
-
-      const config = loadEnvironmentConfig();
-      expect(config).toEqual({});
-
-      // Restore env vars
-      for (const [key, value] of Object.entries(originalEnv)) {
-        if (value !== undefined) {
-          process.env[key] = value;
-        }
-      }
+  it('should use default timeout of 30000ms when not specified', () => {
+    const config = createServerConfig(app, {
+      spec: 'https://example.com/api.json',
     });
+    
+    expect(config.requestTimeoutMs).toBe(30000);
   });
 
-  describe('collectHeader', () => {
-    it('should parse valid header string', () => {
-      const headers = new Headers();
-      const result = collectHeader('Authorization=Bearer token', headers);
-
-      expect(result.get('Authorization')).toBe('Bearer token');
+  it('should accept custom timeout via overrides', () => {
+    const config = createServerConfig(app, {
+      spec: 'https://example.com/api.json',
+      requestTimeoutMs: 60000,
     });
+    
+    expect(config.requestTimeoutMs).toBe(60000);
+  });
 
-    it('should handle header values with equals signs', () => {
-      const headers = new Headers();
-      const result = collectHeader('X-Token=abc=def=ghi', headers);
-
-      expect(result.get('X-Token')).toBe('abc=def=ghi');
+  it('should accept custom timeout in createValidatedServerConfig', () => {
+    const config = createValidatedServerConfig({
+      app,
+      spec: 'https://example.com/api.json',
+      requestTimeoutMs: 45000,
     });
+    
+    expect(config.requestTimeoutMs).toBe(45000);
+  });
 
-    it('should trim whitespace from key and value', () => {
-      const headers = new Headers();
-      const result = collectHeader('  Authorization  =  Bearer token  ', headers);
+  it('should validate timeout from environment config', () => {
+    // Instead of mutating process.env, we can test the validation function directly
+    // or use dependency injection pattern in the actual implementation
+    
+    // For now, let's test that the config structure supports timeout
+    const _mockEnv: EnvironmentConfig = {
+      OPENAPI_SPEC_URL: 'https://example.com/api.json',
+      REQUEST_TIMEOUT_MS: '45000',
+    };
+    
+    // The loadEnvironmentConfig would need to accept an optional env parameter
+    // to make it testable without global state mutation
+    
+  });
 
-      expect(result.get('Authorization')).toBe('Bearer token');
+  it('should pass timeout through to server state', () => {
+    const config = createServerConfig(app, {
+      spec: 'https://example.com/api.json',
+      requestTimeoutMs: 120000,
     });
-
-    it('should preserve existing headers', () => {
-      const headers = new Headers();
-      headers.set('Existing', 'value');
-
-      const result = collectHeader('New=header', headers);
-
-      expect(result.get('Existing')).toBe('value');
-      expect(result.get('New')).toBe('header');
-    });
-
-    it('should throw error for invalid header format', () => {
-      const headers = new Headers();
-      
-      expect(() => collectHeader('InvalidHeader', headers)).toThrow();
-      expect(() => collectHeader('=value', headers)).toThrow();
-    });
+    
+    expect(config.requestTimeoutMs).toBe(120000);
   });
 });

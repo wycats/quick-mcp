@@ -25,6 +25,7 @@ export interface EnvironmentConfig {
   readonly LOG_LEVEL?: LogLevel;
   readonly TRANSPORT?: TransportType;
   readonly AUTH_HEADERS?: string;
+  readonly REQUEST_TIMEOUT_MS?: string;
 }
 
 /**
@@ -63,7 +64,8 @@ export function loadEnvironmentConfig(): EnvironmentConfig {
     ...(process.env['BASE_URL'] && { BASE_URL: process.env['BASE_URL'] }),
     ...(process.env['LOG_LEVEL'] && { LOG_LEVEL: process.env['LOG_LEVEL'] as LogLevel }),
     ...(process.env['TRANSPORT'] && { TRANSPORT: process.env['TRANSPORT'] as TransportType }),
-    ...(process.env['AUTH_HEADERS'] && { AUTH_HEADERS: process.env['AUTH_HEADERS'] })
+    ...(process.env['AUTH_HEADERS'] && { AUTH_HEADERS: process.env['AUTH_HEADERS'] }),
+    ...(process.env['REQUEST_TIMEOUT_MS'] && { REQUEST_TIMEOUT_MS: process.env['REQUEST_TIMEOUT_MS'] })
   };
 }
 
@@ -101,12 +103,17 @@ export function createServerConfig(
     });
   }
   
+  // Parse timeout with validation
+  const timeoutMs = overrides.requestTimeoutMs ?? 
+    (env.REQUEST_TIMEOUT_MS ? validateTimeout(env.REQUEST_TIMEOUT_MS) : 30000);
+  
   return {
     app,
     spec: validateSpecUrl(specUrl),
     port,
     headers,
     transport: overrides.transport ?? env.TRANSPORT ?? 'http',
+    requestTimeoutMs: timeoutMs,
     ...(overrides.baseUrl ?? env.BASE_URL ? { baseUrl: overrides.baseUrl ?? env.BASE_URL } : {})
   };
 }
@@ -121,6 +128,7 @@ export function createValidatedServerConfig(options: {
   readonly headers?: Headers;
   readonly transport?: TransportType;
   readonly baseUrl?: string;
+  readonly requestTimeoutMs?: number;
 }): ServerOptions {
   return {
     app: options.app,
@@ -128,6 +136,7 @@ export function createValidatedServerConfig(options: {
     port: validatePort(options.port ?? getDefaultPort()),
     headers: options.headers ?? new Headers(),
     transport: options.transport ?? 'http',
+    requestTimeoutMs: options.requestTimeoutMs ?? 30000,
     ...(options.baseUrl ? { baseUrl: options.baseUrl } : {})
   };
 }
@@ -147,6 +156,32 @@ export function createEnvironmentConfig(
   }
   
   return createServerConfig(app, overrides);
+}
+
+/**
+ * Validate and parse timeout value
+ */
+function validateTimeout(timeoutStr: string): number {
+  const timeout = Number(timeoutStr);
+  if (!Number.isInteger(timeout) || timeout < 0) {
+    throw createConfigurationError(
+      `Invalid REQUEST_TIMEOUT_MS: "${timeoutStr}". Must be a positive integer (milliseconds).`,
+      { provided: timeoutStr }
+    );
+  }
+  if (timeout < 1000) {
+    throw createConfigurationError(
+      `REQUEST_TIMEOUT_MS too small: ${timeout}ms. Minimum is 1000ms (1 second).`,
+      { provided: timeout }
+    );
+  }
+  if (timeout > 300000) {
+    throw createConfigurationError(
+      `REQUEST_TIMEOUT_MS too large: ${timeout}ms. Maximum is 300000ms (5 minutes).`,
+      { provided: timeout }
+    );
+  }
+  return timeout;
 }
 
 /**

@@ -202,6 +202,40 @@ Before considering any AI-assisted development complete:
 - [ ] Performance boundaries tested
 - [ ] Resource cleanup tested
 
+#### Testing Infrastructure
+
+**SuperTest for HTTP Testing**: Quick-MCP uses SuperTest for all HTTP server
+testing, aligning with our "no mocks" philosophy:
+
+```typescript
+// ✅ Real HTTP testing with SuperTest
+import request from 'supertest';
+const response = await request(quickMcpServer)
+  .post('/mcp')
+  .send(mcpRequest)
+  .expect(200);
+
+// ❌ Avoid mocking HTTP behavior
+// vi.mock('node:fetch') - violates no-mocks policy
+```
+
+**Rationale for SuperTest**:
+- **Real implementations**: Tests actual HTTP servers, not mocked behavior
+- **Timeout testing**: Can test real network timeouts with slow endpoints
+- **Industry standard**: Battle-tested in Express.js ecosystem
+- **Auto-management**: Handles server lifecycle (start/stop) automatically
+- **Fluent API**: Clean, readable test assertions for HTTP behavior
+
+**Creating Test Endpoints with Artificial Delays**:
+
+```javascript
+// Add to demo server for timeout testing
+app.get('/slow/:seconds', (req, res) => {
+  const delay = parseInt(req.params.seconds) * 1000;
+  setTimeout(() => res.json({ delayed: delay }), delay);
+});
+```
+
 ### Documentation
 
 - [ ] Design decisions documented with rationale

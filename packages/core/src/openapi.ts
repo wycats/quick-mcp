@@ -7,7 +7,7 @@ import type { LogLayer } from 'loglayer';
 import Oas from 'oas';
 import type { OASDocument } from 'oas/types';
 import OASNormalize from 'oas-normalize';
-import type { z } from 'zod';
+import { z } from 'zod';
 
 import { OperationClient } from './client.ts';
 import type { PathOperation } from './client.ts';
@@ -19,6 +19,26 @@ import type { CustomExtensionsInterface } from './operation/custom-extensions.ts
 import { QuickMcpOperation } from './operation/ext.ts';
 import { getParameters } from './parameter-mapper.ts';
 import { HttpVerb } from './safety.ts';
+
+// Schema for MCP context with bearer token
+const mcpContextSchema = z.object({
+  _context: z.object({
+    token: z.string().optional(),
+  }).optional(),
+}).passthrough();
+
+
+// Helper to extract bearer token and clean args
+function extractBearerToken<T = z.objectOutputType<z.ZodRawShape, z.ZodTypeAny>>(
+  args: T
+): { bearerToken?: string; apiArgs: T } {
+  const parsed = mcpContextSchema.safeParse(args);
+  if (parsed.success && parsed.data._context?.token) {
+    const { _context, ...restArgs } = parsed.data;
+    return { bearerToken: parsed.data._context.token, apiArgs: restArgs as T };
+  }
+  return { apiArgs: args };
+}
 
 export interface OpenApiSpecOptions {
   readonly app: AppContext;
@@ -85,7 +105,7 @@ export class OpenApiSpec {
       .filter(Boolean);
   }
 
-  createResources(server: McpServer): void {
+  createResources(server: McpServer, options?: { requestTimeoutMs?: number }): void {
     const resources = this.#tools.filter((client) => client.op.isResource);
 
     for (const client of resources) {
@@ -99,7 +119,8 @@ export class OpenApiSpec {
           `Converting ${client.op.describe()} → ${client.op.verb.describe()} resource "${client.op.id}"`,
         );
         server.resource(client.op.id, uriTemplate, async (_, args): Promise<ReadResourceResult> => {
-          return client.toResource().invoke(args);
+          const { bearerToken, apiArgs } = extractBearerToken(args);
+          return client.toResource().invoke(apiArgs, bearerToken, options?.requestTimeoutMs);
         });
       } else {
         this.#log.debug(
@@ -109,14 +130,15 @@ export class OpenApiSpec {
           client.op.id,
           `${this.#spec.url()}${path}`,
           async (_, args): Promise<ReadResourceResult> => {
-            return client.toResource().invoke(args);
+            const { bearerToken, apiArgs } = extractBearerToken(args);
+            return client.toResource().invoke(apiArgs, bearerToken, options?.requestTimeoutMs);
           },
         );
       }
     }
   }
 
-  createTools(server: McpServer): void {
+  createTools(server: McpServer, options?: { requestTimeoutMs?: number }): void {
     let endpointCount = 0;
 
     const tools = this.#tools.filter((client) => !client.op.ignoredWhen({ type: 'tool' }));
@@ -133,7 +155,9 @@ export class OpenApiSpec {
       ): Promise<CallToolResult> => {
         this.#log.info(`Request from ${client.op.describe()}:`, JSON.stringify(args, null, 2));
 
-        return client.invoke(args);
+        const { bearerToken, apiArgs } = extractBearerToken(args);
+        
+        return client.invoke(apiArgs, bearerToken, options?.requestTimeoutMs);
       };
 
       // Extract parameter schemas with full type information

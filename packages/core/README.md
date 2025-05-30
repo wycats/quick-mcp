@@ -1,418 +1,233 @@
-# 🔄 Quick-MCP
+# @quick-mcp/core
 
-🛠️ A dynamic proxy that converts OpenAPI Specification (OAS) endpoints into Model Context Protocol (MCP) tools on the fly.
+**Dynamic proxy that converts OpenAPI specifications into Model Context Protocol (MCP) tools and resources in real-time.**
 
-## 🌟 Overview
+[![npm version](https://badge.fury.io/js/@quick-mcp/core.svg)](https://www.npmjs.com/package/@quick-mcp/core)
 
-Quick-MCP enables seamless integration between REST APIs and AI agents by dynamically translating OpenAPI endpoints into MCP tools. Unlike static code generators, Quick-MCP creates a live proxy server that:
+Transform any OpenAPI-documented REST API into MCP tools that AI assistants can use directly. No code generation, no manual integration - just point Quick-MCP at your OpenAPI spec and start using your API with Claude, ChatGPT, or any MCP-compatible AI assistant.
 
-1. **Parses** OpenAPI specs from local files or URLs
-2. **Dynamically maps** REST endpoints to MCP tools with appropriate schemas
-3. **Proxies** requests between the MCP client and the underlying REST API
-4. **Handles** conversions between MCP and REST formats in real-time
-
-This allows AI agents to use existing REST APIs as if they were native MCP tools without any manual implementation required.
-
-## ✨ Features
-
-- 📄 Parse OpenAPI 2.0+ specs (JSON, YAML)
-- 🔄 Dynamic tool & resource generation
-- 🌐 Base URL overrides and custom headers
-- 🔍 Response validation & schema conversion
-- 🛡️ Authentication forwarding via headers
-- 🚀 HTTP and STDIO transport support
-- 🔧 Environment-based configuration (12-factor app)
-
-## 📦 Installation
+## Installation
 
 ```bash
-npm install -g quick-mcp
-# Or via npx without install
-npx quick-mcp --spec path/to/openapi.yaml
+npm install -g @quick-mcp/core
 ```
 
-## 🚀 CLI Usage
+## Quick Start
+
+### Basic Usage
 
 ```bash
-# Start proxy with local spec
-quick-mcp --spec api-spec.yaml --base-url https://api.example.com
+# Start MCP server from OpenAPI spec
+quick-mcp --spec https://api.example.com/openapi.json
 
-# Custom port and log level
-quick-mcp --spec api-spec.yaml --port 9000 --log-level debug
-
-# Use stdio transport
-quick-mcp --spec api-spec.yaml --transport stdio
-
-# Add custom headers
-quick-mcp --spec api-spec.yaml --header "Authorization: Bearer TOKEN"
+# Use local file
+quick-mcp --spec ./api-spec.yaml --port 8080
 ```
 
-## 🖼 Architecture
+### With Authentication
 
-Quick-MCP follows a real-time proxy architecture:
+```bash
+# Add API key header
+quick-mcp --spec https://api.example.com/openapi.json \
+  --header "Authorization: Bearer YOUR_API_KEY"
 
-1. **Parser** 📄: Loads and validates the OpenAPI specification
-2. **Mapper** 🗺️: Converts API endpoints to MCP tools and resources dynamically
-3. **Proxy** 🔄: Routes MCP tool calls to the appropriate REST endpoints
-4. **Server** 🔌: Exposes the MCP interface to clients
-
-## 🔄 Conversion Rules
-
-### 🔄 OpenAPI to MCP Mapping
-
-| Status | OpenAPI Element           | MCP Element                | Conversion Notes                                |
-| ------ | ------------------------- | -------------------------- | ----------------------------------------------- |
-| 🟢     | `operationId`             | Tool `name`                | Falls back to path+method if not specified      |
-| 🟢     | `summary`+`description`   | Tool `description`         | Combined with configurable formatting           |
-| 🟢     | Parameters + request body | Tool `inputSchema`         | Converted to JSON Schema                        |
-| 🟢     | `deprecated` flag         | `annotations.deprecated`   | Direct mapping                                  |
-| 🟢     | HTTP method               | Tool annotations           | Maps to `readOnlyHint`, `destructiveHint`, etc. |
-| 🟡     | `tags`                    | `annotations.tags`         | Used for categorization                         |
-| 🟡     | `responses` schemas       | Tool result handling       | For typed result processing                     |
-| 🟠     | `security`                | Authentication             | Security scheme mapping                         |
-| 🟠     | `examples`                | Usage examples             | Added to tool descriptions                      |
-| 🔴     | Related endpoints         | `annotations.relatedTools` | For complex workflows                           |
-
-### 🔎 HTTP Method Mappings
-
-| HTTP Method | Tool Annotations                                                           | Semantic Meaning                |
-| ----------- | -------------------------------------------------------------------------- | ------------------------------- |
-| GET         | `{"readOnlyHint": true}`                                                   | Non-destructive query operation |
-| POST        | `{"readOnlyHint": false, "destructiveHint": false}`                        | Creation operation              |
-| PUT         | `{"readOnlyHint": false, "destructiveHint": true, "idempotentHint": true}` | Idempotent update               |
-| PATCH       | `{"readOnlyHint": false, "destructiveHint": true}`                         | Partial update                  |
-| DELETE      | `{"readOnlyHint": false, "destructiveHint": true}`                         | Resource deletion               |
-
-### 📂 Resource Generation
-
-Endpoints are automatically converted to MCP resources when:
-
-1. The endpoint is a GET operation
-2. And either:
-   - Has no parameters, or
-   - Has only path parameters (for resource templates)
-3. And does not have a request body
-4. And is not excluded by configuration (see below)
-
-#### Resource Classification Rules
-
-Resource generation can be controlled via `x-quick-mcp` extensions:
-
-```yaml
-# Disable resource generation (still available as a tool)
-paths:
-  /users/{id}:
-    get:
-      x-quick-mcp:
-        ignore: 'resource'
-
-# Disable both resource and tool generation
-paths:
-  /internal/metrics:
-    get:
-      x-quick-mcp:
-        ignore: true
-
-# Override safety annotations (affects resource classification)
-paths:
-  /dangerous-get/{id}:
-    get:
-      x-quick-mcp:
-        annotations:
-          readOnlyHint: false    # non-readonly GETs are not registered as resources
-          destructiveHint: true   # destructive operations aren't registered as resources
+# Multiple headers
+quick-mcp --spec https://api.example.com/openapi.json \
+  --header "Authorization: Bearer TOKEN" \
+  --header "X-API-Key: KEY"
 ```
 
-An operation with `x-quick-mcp: ignore: 'resource'` will still be available as a tool but won't be registered as a resource.
+### Environment Configuration
 
-An operation with `x-quick-mcp: ignore: true` will be completely ignored (neither tool nor resource).
+```bash
+# Set environment variables
+export OPENAPI_SPEC_URL="https://api.example.com/openapi.json"
+export REQUEST_TIMEOUT_MS="60000"
+export AUTH_HEADERS='{"Authorization": "Bearer YOUR_TOKEN"}'
 
-GET operations with non-readonly safety annotations (like `destructiveHint: true`) won't be registered as resources, as resources are expected to be safe to access without side effects.
+# Run with environment config
+quick-mcp --env
+```
 
-## 🔄 Response Schema Handling
+## CLI Options
 
-Quick-MCP provides comprehensive handling for response schemas defined in your OpenAPI specification:
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--spec <path>` | OpenAPI specification URL or file path | Required |
+| `--port <number>` | MCP server port | 8080 |
+| `--transport <type>` | Transport: `http` or `stdio` | http |
+| `--timeout <ms>` | Request timeout in milliseconds | 30000 |
+| `--header <header>` | Custom header (format: "Name: Value") | None |
+| `--base-url <url>` | Override API base URL | From spec |
+| `--log-level <level>` | Log level: trace, debug, info, warn, error, fatal | warn |
+| `--env` | Load configuration from environment variables | false |
 
-### 🔍 Accessing Response Schemas
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `OPENAPI_SPEC_URL` | OpenAPI specification URL |
+| `PORT` | Server port |
+| `REQUEST_TIMEOUT_MS` | Request timeout (1000-300000ms) |
+| `TRANSPORT` | Transport type (http or stdio) |
+| `BASE_URL` | API base URL override |
+| `LOG_LEVEL` | Logging level |
+| `AUTH_HEADERS` | JSON object with headers |
+
+## Programmatic API
 
 ```typescript
-// Get schema for a specific status code
-const schema = operation.getResponseSchema('200');
+import { createServer, createAppContext } from '@quick-mcp/core';
 
-// Get all response schemas as JSON Schema objects
-const schemas = operation.responseSchemas;
-const okSchema = schemas['200'];
-const errorSchema = schemas['400'];
+// Create and start server
+const server = await createServer({
+  app: createAppContext('info'),
+  spec: 'https://api.example.com/openapi.json',
+  port: 8080,
+  transport: 'http',
+  requestTimeoutMs: 30000,
+  headers: new Headers({
+    'Authorization': 'Bearer YOUR_TOKEN'
+  })
+});
 
-// Get schemas as Zod validation objects
-const zodSchemas = operation.zodResponseSchemas;
-
-// Validate a response
-try {
-  const validatedData = zodSchemas['200'].parse(responseData);
-  // Use validated data...
-} catch (error) {
-  console.error('Response validation failed:', error);
-}
+await server.start();
 ```
 
-### 🧮 Response Schema Caching
+## How It Works
 
-Response schemas are cached for better performance. If the underlying OpenAPI specification changes, restarting the application will clear all caches.
+Quick-MCP automatically converts your OpenAPI specification into MCP tools:
 
-### 📋 Content Type Selection
+- **GET operations** → MCP Resources (for data retrieval)
+- **POST/PUT/DELETE operations** → MCP Tools (for actions)
+- **Path parameters** → Required MCP arguments
+- **Query parameters** → Optional MCP arguments
+- **Request bodies** → MCP argument objects
 
-When multiple content types are available for a response, Quick-MCP selects the best JSON-compatible one using this priority:
+## Authentication
 
-1. `application/json` (highest priority)
-2. Any content type ending with `+json` or containing `json`
-3. First available content type (fallback)
-
-## 📐 Schema Compatibility
-
-> [!IMPORTANT]
-> Quick-MCP handles the differences between OpenAPI schemas and MCP's JSON Schema requirements.
-
-### 🔧 Schema Differences
-
-| OpenAPI Schema           | MCP Schema                 | Handling Strategy           |
-| ------------------------ | -------------------------- | --------------------------- |
-| Uses JSON Schema subset  | Uses standard JSON Schema  | Convert and validate        |
-| Has OpenAPI extensions   | No extensions              | Remove or map appropriately |
-| Relies on `$ref`         | Requires inline schemas    | Resolve all references      |
-| Has `nullable` (OAS 3.0) | Uses `type: ["null", ...]` | Convert format              |
-
-> [!TIP]
->
-> The easiest way to deal with the differences in OpenAPI Schema is to stick to
-> the version of JSON Schema supported by OpenAPI 3.1. That minimizes the need
-> for automatic conversions, which rely on heuristics.
-
-### 🔄 Automatic Conversions
-
-> [!IMPORTANT]
->
-> If you don't like the automatic conversions, you can use the `x-quick-mcp`
-> extension to provide your own schema.
-
-### 🔢 Type Mappings
-
-| OpenAPI Type | Format           | MCP JSON Schema Type | Format     |
-| ------------ | ---------------- | -------------------- | ---------- |
-| `string`     | various          | `string`             | preserved  |
-| `integer`    | `int32`/`int64`  | `integer`            | normalized |
-| `number`     | `float`/`double` | `number`             | normalized |
-| `boolean`    | n/a              | `boolean`            | preserved  |
-| `array`      | n/a              | `array`              | preserved  |
-| `object`     | n/a              | `object`             | preserved  |
-
-## ⚙️ Configuration
-
-### 📝 Using x-quick-mcp Extensions
-
-Configure custom behavior using the `x-quick-mcp` extension at different levels in your OpenAPI spec:
-
-1. **Root level** - Global configuration
-2. **Path level** - Endpoint-specific settings
-3. **Operation level** - Fine-grained control
-
-```yaml
-# Root level configuration
-x-quick-mcp:
-  templates:
-    default:
-      description: '{summary} ({description})'
-
-# Path level configuration
-paths:
-  /users:
-    x-quick-mcp:
-      include: [tools, resources]
-
-  # Operation level configuration
-  /users/{id}:
-    get:
-      x-quick-mcp:
-        operationId: 'user_by_id' # Override name
-        annotations: # Custom annotations
-          readOnlyHint: false # Override default
-        ignore: false # Explicitly enable (default)
-```
-
-### 🌍 Environment Variables
-
-Quick-MCP supports 12-factor app configuration via environment variables:
+Pass authentication headers through to your API:
 
 ```bash
-# Required
-export OPENAPI_SPEC_URL="https://api.example.com/openapi.json"
-
-# Optional
-export BASE_URL="https://api.example.com"
-export PORT="8080"
-export LOG_LEVEL="info"
-export TRANSPORT="http"  # or "stdio"
-export AUTH_HEADERS='{"Authorization": "Bearer token", "X-API-Key": "key"}'
-```
-
-Then run with environment configuration:
-
-```bash
-# Configure proxy with CLI options
-quick-mcp --spec api-spec.yaml --port 9000 --log-level debug
-
-# Set custom headers for authentication and other purposes
-quick-mcp --spec api-spec.yaml --header "Authorization: Bearer TOKEN" \
-  --header "User-Agent: Quick-MCP/1.0"
-
-# Use environment variables for 12-factor app deployment
-quick-mcp --env
-```
-
-### 🚫 Opting Out
-
-Disable automatic conversion for specific endpoints:
-
-```yaml
-paths:
-  /internal/metrics:
-    get:
-      x-quick-mcp:
-        ignore: true # Disable completely
-
-  /users/{id}:
-    get:
-      x-quick-mcp:
-        ignore: 'resource' # Only create tool, not resource
-```
-
-## 📚 Examples
-
-### 📈 Basic Endpoint Conversion
-
-**OpenAPI Input:**
-
-```yaml
-paths:
-  /users/{id}:
-    get:
-      operationId: getUserById
-      summary: Get user by ID
-      description: Retrieves a user by their unique identifier
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          description: User found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-```
-
-**Dynamically Generated MCP Tool:**
-
-```json
-{
-  "name": "getUserById",
-  "description": "Get user by ID - Retrieves a user by their unique identifier",
-  "inputSchema": {
-    "type": "object",
-    "required": ["id"],
-    "properties": {
-      "id": {
-        "type": "string",
-        "description": "User's unique identifier"
-      }
-    }
-  },
-  "annotations": {
-    "readOnlyHint": true,
-    "sourceEndpoint": "/users/{id}"
-  }
-}
-```
-
-### 🔒 Authentication Forwarding
-
-**OpenAPI Input with Security:**
-
-```yaml
-security:
-  - apiKey: []
-
-securitySchemes:
-  apiKey:
-    type: apiKey
-    in: header
-    name: X-API-Key
-
-paths:
-  /secure/resource:
-    get:
-      operationId: getSecureResource
-      summary: Get a secure resource
-```
-
-**Authentication via CLI Headers:**
-
-```bash
-# Forward authentication headers to the backend API
-quick-mcp --spec api-spec.yaml \
-  --header "X-API-Key: your-api-key" \
-  --header "Authorization: Bearer your-token"
-```
-
-**Authentication via Environment Variables:**
-
-```bash
-export AUTH_HEADERS='{"X-API-Key": "your-api-key", "Authorization": "Bearer your-token"}'
-quick-mcp --env
-```
-
-The MCP tool will be created normally, and Quick-MCP will automatically forward the configured headers to the backend API on each request.
-
-## 🔄 MCP Proxy Features
-
-### Dynamic Request Handling
-
-Quick-MCP intelligently converts between MCP tool calls and REST API requests:
-
-1. **Request Transformation**: Converts MCP tool arguments to appropriate query parameters, path parameters, headers, and request bodies based on the OpenAPI spec
-
-2. **Response Transformation**: Converts REST API responses back to MCP tool results with proper content formatting
-
-3. **Error Handling**: Maps HTTP error codes to meaningful MCP error responses with appropriate status codes and error messages
-
-4. **Authentication Forwarding**: Securely forwards authentication tokens from MCP clients to the underlying REST API
-
-## 🧩 Integration with AI Agents
-
-Quick-MCP makes it easy to connect existing REST APIs to AI agents that support the MCP protocol, effectively turning any API into a tool the agent can use:
-
-```bash
-# Start Quick-MCP proxy to convert an API to MCP
+# API Key
 quick-mcp --spec https://api.example.com/openapi.json \
-       --header "Authorization: Bearer sk_test_123" \
-       --port 8080
+  --header "X-API-Key: your-key"
 
-# Or using environment variables
-export OPENAPI_SPEC_URL="https://api.example.com/openapi.json"
-export AUTH_HEADERS='{"Authorization": "Bearer sk_test_123"}'
-export PORT="8080"
-quick-mcp --env
+# Bearer Token
+quick-mcp --spec https://api.example.com/openapi.json \
+  --header "Authorization: Bearer your-token"
+
+# Multiple headers via environment
+export AUTH_HEADERS='{
+  "Authorization": "Bearer token",
+  "X-API-Key": "key",
+  "X-Custom-Header": "value"
+}'
+quick-mcp --spec https://api.example.com/openapi.json --env
 ```
 
-Now your AI agent can connect to the MCP server and use the API endpoints as MCP tools without any additional implementation.
+## Error Handling
 
-## 👥 Contributing
+Quick-MCP provides robust error handling:
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+- **Timeout errors**: Configurable request timeouts (1s - 5min)
+- **Network errors**: Detailed error context with operation info
+- **Validation errors**: Schema validation for requests and responses
+- **Authentication errors**: Clear error messages for auth failures
 
-## 📜 License
+## Production Deployment
+
+### Docker
+
+```dockerfile
+FROM node:18-alpine
+COPY . /app
+WORKDIR /app
+RUN npm install -g @quick-mcp/core
+EXPOSE 8080
+CMD ["quick-mcp", "--spec", "/app/openapi.json", "--env"]
+```
+
+### Heroku
+
+```bash
+# Set environment variables
+heroku config:set OPENAPI_SPEC_URL="https://your-api.com/openapi.json"
+heroku config:set PORT="8080"
+heroku config:set REQUEST_TIMEOUT_MS="60000"
+
+# Deploy
+git push heroku main
+```
+
+## Supported OpenAPI Features
+
+- ✅ OpenAPI 2.0, 3.0, 3.1
+- ✅ JSON and YAML formats
+- ✅ Path parameters
+- ✅ Query parameters
+- ✅ Request bodies (JSON)
+- ✅ Response schemas
+- ✅ Authentication headers
+- ✅ Base URL overrides
+- ✅ Custom extensions (`x-quick-mcp`)
+
+## Examples
+
+### GitHub API
+
+```bash
+quick-mcp --spec https://api.github.com/openapi.json \
+  --header "Authorization: token YOUR_GITHUB_TOKEN"
+```
+
+### Stripe API
+
+```bash
+quick-mcp --spec https://stripe.com/docs/api/openapi.yaml \
+  --header "Authorization: Bearer sk_test_..."
+```
+
+### Custom API
+
+```bash
+quick-mcp --spec ./my-api.yaml \
+  --base-url https://my-api.production.com \
+  --timeout 60000
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Connection refused:**
+```bash
+# Check if your API is accessible
+curl https://api.example.com/openapi.json
+```
+
+**Timeout errors:**
+```bash
+# Increase timeout for slow APIs
+quick-mcp --spec https://api.example.com/openapi.json --timeout 60000
+```
+
+**Authentication errors:**
+```bash
+# Verify headers format
+quick-mcp --spec https://api.example.com/openapi.json \
+  --header "Authorization: Bearer YOUR_TOKEN" \
+  --log-level debug
+```
+
+## Links
+
+- 📖 [Full Documentation](https://github.com/wycats/quick-mcp)
+- 🔧 [API Reference](https://github.com/wycats/quick-mcp/blob/main/API.md)
+- 🏗️ [Architecture Guide](https://github.com/wycats/quick-mcp/blob/main/ARCHITECTURE.md)
+- 🤝 [Contributing](https://github.com/wycats/quick-mcp/blob/main/CONTRIBUTING.md)
+- 🐛 [Issues](https://github.com/wycats/quick-mcp/issues)
+
+## License
 
 MIT

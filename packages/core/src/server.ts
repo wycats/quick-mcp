@@ -66,8 +66,9 @@ export class QuickMcpServer {
    */
   public async start(): Promise<void> {
     try {
-      this.#state.spec.createResources(this.#server);
-      this.#state.spec.createTools(this.#server);
+      const timeoutOptions = { requestTimeoutMs: this.#state.requestTimeoutMs };
+      this.#state.spec.createResources(this.#server, timeoutOptions);
+      this.#state.spec.createTools(this.#server, timeoutOptions);
 
       // Create transport based on configuration
       const transport = createTransport(this.#state.transport, {

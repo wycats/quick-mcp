@@ -25,6 +25,7 @@ export function buildRequest(
   app: { log: LogLayer },
   op: QuickMcpOperation,
   args: OasRequestArgs,
+  bearerToken?: string,
 ): Request {
   app.log.trace('Building request with args', JSON.stringify(args, null, 2));
 
@@ -44,6 +45,11 @@ export function buildRequest(
     headers.set('Content-Type', contentType);
   }
   headers.set('Accept', op.responseType);
+  
+  // Add authorization header if bearer token is provided
+  if (bearerToken) {
+    headers.set('Authorization', `Bearer ${bearerToken}`);
+  }
 
   // Create the final request
   const request = new Request(url, {
