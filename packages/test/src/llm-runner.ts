@@ -12,6 +12,35 @@ import { z } from 'zod';
 import type { MCPClient } from './mcp-client.ts';
 import type { TestScenario, TestResult, ToolCall, TestMetrics, ModelConfig } from './types.ts';
 
+// Type definitions for JSON Schema
+interface JsonSchema {
+  type?: string;
+  properties?: Record<string, JsonSchema>;
+  required?: string[];
+  description?: string;
+  enum?: string[];
+  minimum?: number;
+  maximum?: number;
+  items?: JsonSchema;
+}
+
+// Type definitions for AI SDK result structures
+interface ToolCallResult {
+  toolCallId: string;
+  result: unknown;
+}
+
+interface ToolCallInfo {
+  toolName: string;
+  args: Record<string, unknown>;
+  toolCallId: string;
+}
+
+interface StepInfo {
+  toolCalls?: ToolCallInfo[];
+  toolResults?: ToolCallResult[];
+}
+
 export class LLMRunner {
   #model: LanguageModel;
   #modelConfig: ModelConfig;
@@ -228,7 +257,7 @@ export class LLMRunner {
       return z.any();
     }
 
-    const jsonSchema = schema as any;
+    const jsonSchema = schema as JsonSchema;
 
     // Handle object schemas
     if (jsonSchema.type === 'object') {
@@ -270,8 +299,8 @@ export class LLMRunner {
         if (jsonSchema.description) {
           stringSchema = stringSchema.describe(jsonSchema.description);
         }
-        if (jsonSchema.enum) {
-          return z.enum(jsonSchema.enum);
+        if (jsonSchema.enum && Array.isArray(jsonSchema.enum) && jsonSchema.enum.length > 0) {
+          return z.enum(jsonSchema.enum as [string, ...string[]]);
         }
         return stringSchema;
         
@@ -280,7 +309,7 @@ export class LLMRunner {
         if (jsonSchema.description) {
           numberSchema = numberSchema.describe(jsonSchema.description);
         }
-        if (jsonSchema.minimum !== undefined) {
+        if (typeof jsonSchema.minimum === 'number') {
           numberSchema = numberSchema.min(jsonSchema.minimum);
         }
         return numberSchema;
@@ -290,7 +319,7 @@ export class LLMRunner {
         if (jsonSchema.description) {
           intSchema = intSchema.describe(jsonSchema.description);
         }
-        if (jsonSchema.minimum !== undefined) {
+        if (typeof jsonSchema.minimum === 'number') {
           intSchema = intSchema.min(jsonSchema.minimum);
         }
         return intSchema;
@@ -303,7 +332,7 @@ export class LLMRunner {
         return boolSchema;
         
       case 'array':
-        let arraySchema = z.array(this.#jsonSchemaToZod(jsonSchema.items || {}));
+        let arraySchema = z.array(this.#jsonSchemaToZod(jsonSchema.items ?? {}));
         if (jsonSchema.description) {
           arraySchema = arraySchema.describe(jsonSchema.description);
         }
@@ -338,22 +367,23 @@ export class LLMRunner {
       const endTime = Date.now();
 
       // Extract tool calls from result for tracking
-      if (result.steps && result.steps.length > 0) {
+      if (result.steps.length > 0) {
         console.log(`🔧 Debug: Found ${result.steps.length} steps in result`);
         for (const step of result.steps) {
-          if ('toolCalls' in step && step.toolCalls && step.toolCalls.length > 0) {
-            console.log(`🔧 Debug: Step has ${step.toolCalls.length} tool calls`);
-            for (const toolCall of step.toolCalls) {
+          const stepInfo = step as StepInfo;
+          if (stepInfo.toolCalls && stepInfo.toolCalls.length > 0) {
+            console.log(`🔧 Debug: Step has ${stepInfo.toolCalls.length} tool calls`);
+            for (const toolCall of stepInfo.toolCalls) {
               console.log(`🔧 Debug: Tool call - ${toolCall.toolName} with args:`, toolCall.args);
               // Find the corresponding tool result if available
-              const toolResult = (step as any).toolResults?.find(
-                (result: any) => result.toolCallId === (toolCall as any).toolCallId
+              const toolResult = stepInfo.toolResults?.find(
+                (result) => result.toolCallId === toolCall.toolCallId
               );
               
               toolCalls.push({
                 name: toolCall.toolName,
                 arguments: toolCall.args,
-                response: toolResult?.result || {},
+                response: toolResult?.result ?? {},
                 success: true, // Assume success unless we get error info
                 duration: 0, // Will be filled by tool execution
               });
@@ -363,8 +393,11 @@ export class LLMRunner {
       }
 
       // Log if no tool calls were detected
-      if (!result.steps || result.steps.length === 0 || 
-          !result.steps.some((step: any) => step.toolCalls?.length > 0)) {
+      if (result.steps.length === 0 || 
+          !result.steps.some((step) => {
+            const stepInfo = step as StepInfo;
+            return stepInfo.toolCalls && stepInfo.toolCalls.length > 0;
+          })) {
         console.log(`🔧 Debug: No tool calls detected in result`);
         console.log(`🔧 Debug: Available tools:`, Object.keys(tools));
         console.log(`🔧 Debug: Response text:`, result.text.slice(0, 200));

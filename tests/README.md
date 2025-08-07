@@ -78,5 +78,5 @@ When writing integration tests:
 
 1. Only import from the public API (`@quick-mcp/core`)
 2. Do not access internal implementation details
-3. Focus on verifying the end-to-end behavior 
+3. Focus on verifying the end-to-end behavior
 4. Maintain proper test isolation by creating fresh instances for each test

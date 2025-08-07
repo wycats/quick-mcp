@@ -220,6 +220,7 @@ const response = await request(quickMcpServer)
 ```
 
 **Rationale for SuperTest**:
+
 - **Real implementations**: Tests actual HTTP servers, not mocked behavior
 - **Timeout testing**: Can test real network timeouts with slow endpoints
 - **Industry standard**: Battle-tested in Express.js ecosystem
@@ -242,6 +243,23 @@ app.get('/slow/:seconds', (req, res) => {
 - [ ] Public API documented with examples
 - [ ] Architecture patterns explained
 - [ ] Troubleshooting guides provided
+- [ ] User-facing docs follow qualitative standards (see Documentation Standards)
+
+#### Documentation Standards
+
+**User-Facing Documentation (README, guides, public docs):**
+- Use qualitative descriptions for project health and testing
+- Avoid specific metrics (coverage percentages, test counts, error counts)
+- Focus on capabilities and value proposition
+- Examples: "comprehensive testing", "well-tested", "production-ready"
+
+**Development Documentation (CONTRIBUTING, internal docs):**
+- Include specific metrics and technical details
+- Provide exact numbers for quality gates and thresholds
+- Reference specific test counts, coverage targets, performance benchmarks
+- Examples: "maintain >70% coverage", "227 passing tests", "zero TypeScript errors"
+
+**Rationale:** Specific metrics in user-facing docs become stale quickly and don't provide meaningful context to end users. Development docs need precise targets for quality gates.
 
 ### Production Readiness
 

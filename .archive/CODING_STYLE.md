@@ -5,12 +5,14 @@ This document outlines the coding standards, architectural patterns, and develop
 ## Core Development Philosophy
 
 ### **Understand First, Suggest Later**
+
 - Explore existing patterns before proposing new solutions
 - Match established conventions within the codebase
 - Ask clarifying questions when requirements are unclear
 - Prioritize consistency over personal preferences
 
 ### **Quality Over Speed**
+
 - Code quality standards apply equally to production and test code
 - Prefer explicit, verbose code over clever shortcuts
 - Invest time in proper abstractions rather than quick fixes
@@ -19,6 +21,7 @@ This document outlines the coding standards, architectural patterns, and develop
 ## TypeScript Standards
 
 ### **Type Safety**
+
 ```typescript
 // ✅ Preferred: Strict typing with explicit interfaces
 interface UserConfig {
@@ -32,6 +35,7 @@ function processUser(user: any) { /* ... */ }
 ```
 
 ### **Class Design**
+
 ```typescript
 // ✅ Preferred: Private fields with # syntax
 class ApiClient {
@@ -58,6 +62,7 @@ class BadClient {
 ```
 
 ### **Function Signatures**
+
 ```typescript
 // ✅ Preferred: Explicit return types and parameter typing
 function transformData(
@@ -74,6 +79,7 @@ function transform(input, options) {
 ```
 
 ### **Interface Design**
+
 ```typescript
 // ✅ Preferred: Readonly properties, explicit optionals
 interface Configuration {
@@ -94,6 +100,7 @@ interface BadConfig {
 ## Testing Philosophy
 
 ### **No Mocks Policy**
+
 ```typescript
 // ✅ Preferred: Factory functions and real implementations
 function createTestClient(overrides: Partial<ClientConfig> = {}): ApiClient {
@@ -118,6 +125,7 @@ vi.mock('fetch', () => mockFetch);
 ```
 
 ### **Test Organization**
+
 - **Co-located tests**: Place `*.test.ts` files adjacent to source files
 - **Factory functions**: Create reusable test data generators
 - **High-level assertions**: Test behavior, not implementation details
@@ -142,6 +150,7 @@ describe('UserService', () => {
 ```
 
 ### **Custom Test Matchers**
+
 ```typescript
 // Create domain-specific matchers for better readability
 expect(response).toBeSuccessfulApiResponse();
@@ -151,6 +160,7 @@ expect(result).toMatchValidationSchema(userSchema);
 ## Code Quality Standards
 
 ### **Immutability Patterns**
+
 ```typescript
 // ✅ Preferred: Immutable operations
 function updateUserStatus(user: User, status: UserStatus): User {
@@ -165,6 +175,7 @@ function updateUserStatus(user: User, status: UserStatus): void {
 ```
 
 ### **Error Handling**
+
 ```typescript
 // ✅ Preferred: Explicit error types and handling
 class ApiError extends Error {
@@ -195,6 +206,7 @@ async function fetchData(url: string): Promise<ApiResponse> {
 ```
 
 ### **Dependency Management**
+
 - Only use existing project dependencies unless explicitly approved
 - Prefer standard library solutions over external packages
 - Document the rationale for new dependencies
@@ -203,6 +215,7 @@ async function fetchData(url: string): Promise<ApiResponse> {
 ## Architecture Patterns
 
 ### **Factory Pattern for Configuration**
+
 ```typescript
 interface ServiceOptions {
   readonly apiKey: string;
@@ -230,6 +243,7 @@ class ServiceFactory {
 ```
 
 ### **Builder Pattern for Complex Objects**
+
 ```typescript
 class QueryBuilder {
   readonly #filters: Filter[] = [];
@@ -253,6 +267,7 @@ class QueryBuilder {
 ```
 
 ### **Event-Driven Architecture**
+
 ```typescript
 interface DomainEvent {
   readonly type: string;
@@ -278,6 +293,7 @@ class EventEmitter {
 ## Development Workflow
 
 ### **Git Conventions**
+
 - **Conventional Commits**: Use standard prefixes (feat, fix, docs, style, refactor, test, chore)
 - **Descriptive messages**: Explain the "why" not just the "what"
 - **Small, focused commits**: Each commit should represent a single logical change
@@ -290,12 +306,14 @@ test(user): add integration tests for user creation
 ```
 
 ### **Code Review Standards**
+
 - **Understand the context**: Review for correctness and maintainability
 - **Check for patterns**: Ensure consistency with existing codebase
 - **Verify tests**: Confirm adequate test coverage and quality
 - **Security considerations**: Look for potential vulnerabilities
 
 ### **Scope Management**
+
 - Focus exclusively on defined tasks
 - Request approval before expanding scope
 - Document architectural decisions
@@ -304,12 +322,14 @@ test(user): add integration tests for user creation
 ## Tooling and Environment
 
 ### **Package Management**
+
 - Use workspace package manager (`pnpm`, `yarn workspaces`, etc.)
 - Run tools through package manager, not global installations
 - Pin dependency versions in production
 - Separate dev and production dependencies clearly
 
 ### **Code Quality Tools**
+
 ```json
 {
   "scripts": {
@@ -325,6 +345,7 @@ test(user): add integration tests for user creation
 ```
 
 ### **TypeScript Configuration**
+
 ```json
 {
   "compilerOptions": {
@@ -343,6 +364,7 @@ test(user): add integration tests for user creation
 ## Performance and Optimization
 
 ### **Memory Management**
+
 ```typescript
 // ✅ Preferred: Avoid memory leaks
 class EventListener {
@@ -360,6 +382,7 @@ class EventListener {
 ```
 
 ### **Async Patterns**
+
 ```typescript
 // ✅ Preferred: Proper async/await usage
 async function processItems(items: Item[]): Promise<ProcessedItem[]> {
@@ -387,6 +410,7 @@ async function slowProcessItems(items: Item[]): Promise<ProcessedItem[]> {
 ## Documentation Standards
 
 ### **Code Documentation**
+
 ```typescript
 /**
  * Processes user data according to business rules.
@@ -414,6 +438,7 @@ async function processUserData(
 ```
 
 ### **API Documentation**
+
 - Document public interfaces thoroughly
 - Include usage examples for complex APIs
 - Explain error conditions and handling
@@ -422,6 +447,7 @@ async function processUserData(
 ## Security Practices
 
 ### **Input Validation**
+
 ```typescript
 // ✅ Always validate and sanitize inputs
 function validateEmail(email: string): boolean {
@@ -446,6 +472,7 @@ function sanitizeUserInput(input: string): string {
 ```
 
 ### **Secret Management**
+
 - Never commit secrets to version control
 - Use environment variables for configuration
 - Implement proper secret rotation

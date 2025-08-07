@@ -209,6 +209,30 @@ test(transport): add integration tests for stdio transport
 - **Clear Description**: What changed and why
 - **Breaking Changes**: Document any API changes
 - **Performance Impact**: Note any performance implications
+- **Documentation Standards**: Follow qualitative descriptions in user-facing docs
+
+#### Documentation in PRs
+
+**User-Facing Documentation (README, guides):**
+```markdown
+✅ DO: "Comprehensive testing with strong coverage"
+❌ DON'T: "64.31% test coverage with 227 passing tests"
+
+✅ DO: "Production-ready error handling"
+❌ DON'T: "100% error module coverage"
+
+✅ DO: "Well-tested and type-safe codebase"
+❌ DON'T: "Zero TypeScript errors"
+```
+
+**Development Documentation (CONTRIBUTING, internal):**
+```markdown
+✅ DO: "Maintain >70% coverage"
+✅ DO: "All 227 tests must pass"
+✅ DO: "Zero TypeScript errors required"
+```
+
+**Rationale**: User-facing docs should focus on capabilities and quality, while development docs provide specific targets for contributors.
 
 ## Development Workflow
 

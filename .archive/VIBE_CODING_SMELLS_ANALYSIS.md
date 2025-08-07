@@ -18,6 +18,7 @@ Per `VIBE_CODING_PRACTICES.md`, this is an exhaustive analysis of exploration-ph
 ### 1. **Mixed Concerns & God Objects**
 
 #### `packages/core/src/main.ts` (389 lines) ⚠️
+
 **CRITICAL: Multiple responsibilities in single file**
 
 ```typescript
@@ -34,6 +35,7 @@ const program = new Command()
 ```
 
 **Issues:**
+
 - **Mixed concerns**: Environment parsing + CLI + server startup + configuration
 - **Large static method**: `fromEnvironment()` handles parsing + validation + object construction
 - **No separation**: CLI logic embedded in library file
@@ -42,6 +44,7 @@ const program = new Command()
 ### 2. **Large File Without Clear Abstractions**
 
 #### `packages/core/src/openapi.ts` (390 lines) ⚠️
+
 **VIBE SMELL: Kitchen sink module**
 
 ```typescript
@@ -55,6 +58,7 @@ const program = new Command()
 ```
 
 **Issues:**
+
 - **Single responsibility violation**: Parsing + Registration + Querying + Validation
 - **Complex constructor**: `new OpenApiSpec()` does too much work
 - **Generic error handling**: `console.error(validation)` instead of structured errors
@@ -63,6 +67,7 @@ const program = new Command()
 ### 3. **Exploration-Quality Error Handling**
 
 #### Throughout Codebase ⚠️
+
 **VIBE SMELL: "Make it work" error handling**
 
 ```typescript
@@ -88,6 +93,7 @@ process.exit(1);
 ### 4. **Generic/Poor Abstractions**
 
 #### Variable Names & Abstractions ⚠️
+
 **VIBE SMELL: AI-generated generic patterns**
 
 ```typescript
@@ -104,6 +110,7 @@ parseSpec(spec)              // Could be "parseAndValidateOpenApiSpec"
 ### 5. **Missing Edge Case Handling**
 
 #### Production Readiness Gaps ⚠️
+
 **VIBE SMELL: Happy path only**
 
 ```typescript
@@ -127,6 +134,7 @@ parseSpec(spec)              // Could be "parseAndValidateOpenApiSpec"
 ### **main.ts (389 lines) - NEEDS MAJOR REFACTORING**
 
 **Vibe Smells:**
+
 1. **Mixed CLI and library code** - Should be separate modules
 2. **Static method too complex** - `fromEnvironment()` 33 lines
 3. **Constructor side effects** - Logging in constructor
@@ -134,6 +142,7 @@ parseSpec(spec)              // Could be "parseAndValidateOpenApiSpec"
 5. **process.exit() in library** - Should throw errors instead
 
 **Consolidation Required:**
+
 ```typescript
 // Current (Vibe):
 class QuickMCP {
@@ -163,12 +172,14 @@ class QuickMcpCli {
 ### **openapi.ts (390 lines) - NEEDS DECOMPOSITION**
 
 **Vibe Smells:**
+
 1. **Multiple responsibilities** - Parsing + Registration + Querying
 2. **Constructor does work** - Should be factory pattern
 3. **Type escape hatch** - `as any` admission of defeat
 4. **Generic error handling** - console.error instead of structured
 
 **Consolidation Required:**
+
 ```typescript
 // Current (Vibe): Everything in OpenApiSpec class
 
@@ -191,6 +202,7 @@ class OpenApiSpecValidator {
 ### **request-builder.ts (195 lines) - NEEDS CLEANUP**
 
 **Vibe Smells:**
+
 1. **Large function** - `buildRequestInit()` handles everything
 2. **Mixed abstractions** - URL building + header processing + body formatting
 3. **Generic names** - `args`, `config`, `init`
@@ -198,6 +210,7 @@ class OpenApiSpecValidator {
 ## 🧪 **Test Quality Assessment**
 
 ### **Missing Critical Test Cases:**
+
 ```typescript
 // Current tests are happy-path only
 // Missing:
@@ -220,6 +233,7 @@ describe("Production Edge Cases", () => {
 ## 📋 **Immediate Consolidation Actions Required**
 
 ### **Priority 1: Extract Abstractions (2-3 hours)**
+
 1. **Split main.ts**:
    - `QuickMcpConfiguration` class for environment handling
    - `QuickMcpServer` class for server lifecycle  
@@ -231,18 +245,21 @@ describe("Production Edge Cases", () => {
    - `OpenApiSpecValidator` for validation
 
 ### **Priority 2: Fix Error Handling (1-2 hours)**
+
 1. **Replace console statements** with proper logging
 2. **Add error types**: `ConfigurationError`, `SpecParsingError`, `NetworkError`
 3. **Remove process.exit()** from library code
 4. **Add input validation** with helpful error messages
 
 ### **Priority 3: Real Tests (2-3 hours)**
+
 1. **Edge case coverage** for malformed inputs
-2. **Network failure scenarios** 
+2. **Network failure scenarios**
 3. **Resource limit testing**
 4. **Integration tests** with actual MCP clients
 
 ### **Priority 4: Improve Abstractions (1-2 hours)**
+
 1. **Better naming**: Generic → Domain-specific
 2. **Single responsibility** for all functions
 3. **Remove type escape hatches**
@@ -251,6 +268,7 @@ describe("Production Edge Cases", () => {
 ## 🎯 **Consolidation Success Metrics**
 
 **Before consolidation complete:**
+
 - [ ] No file >200 lines
 - [ ] No function >30 lines  
 - [ ] No `console.*` statements in library code
@@ -263,6 +281,7 @@ describe("Production Edge Cases", () => {
 ## 🚦 **Risk Assessment**
 
 **Current state risks:**
+
 - **Production crashes** from unhandled edge cases
 - **Silent failures** from console.warn patterns
 - **Maintenance burden** from mixed concerns

@@ -6,6 +6,7 @@
 import chalk from 'chalk';
 
 import { LLMRunner } from './llm-runner.ts';
+import type { MCPClient } from './mcp-client.ts';
 
 export async function verifyProvider(modelName: string): Promise<void> {
   console.log(chalk.cyan(`Verifying adapter setup for: ${chalk.white(modelName)}`));
@@ -105,8 +106,8 @@ function getProviderDescription(provider: string): string {
 async function testSimpleToolCall(runner: LLMRunner): Promise<string> {
   // Create a simple mock MCP client with one basic tool
   const mockMCPClient = {
-    async getTools() {
-      return [{
+    getTools() {
+      return Promise.resolve([{
         name: 'getCurrentTime',
         description: 'Get the current time',
         inputSchema: { 
@@ -114,13 +115,13 @@ async function testSimpleToolCall(runner: LLMRunner): Promise<string> {
           properties: {},
           required: []
         },
-      }];
+      }]);
     },
-    async callTool() {
+    callTool(_name: string, _args: Record<string, unknown>) {
       console.log('🔧 Debug: Mock tool getCurrentTime was called!');
-      return { time: new Date().toISOString() };
+      return Promise.resolve({ time: new Date().toISOString() });
     },
-  };
+  } as Partial<MCPClient> as MCPClient;
   
   console.log('🔧 Debug: Starting tool call test...');
   
@@ -135,7 +136,7 @@ async function testSimpleToolCall(runner: LLMRunner): Promise<string> {
           prompt: 'What time is it right now? Please use the getCurrentTime tool to get the current time.',
           expect: [],
         },
-        mockMCPClient as any,
+        mockMCPClient,
         timeoutMs
       ),
       new Promise<never>((_, reject) => {

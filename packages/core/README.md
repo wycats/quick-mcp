@@ -201,18 +201,21 @@ quick-mcp --spec ./my-api.yaml \
 ### Common Issues
 
 **Connection refused:**
+
 ```bash
 # Check if your API is accessible
 curl https://api.example.com/openapi.json
 ```
 
 **Timeout errors:**
+
 ```bash
 # Increase timeout for slow APIs
 quick-mcp --spec https://api.example.com/openapi.json --timeout 60000
 ```
 
 **Authentication errors:**
+
 ```bash
 # Verify headers format
 quick-mcp --spec https://api.example.com/openapi.json \

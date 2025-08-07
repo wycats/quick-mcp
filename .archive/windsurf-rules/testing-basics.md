@@ -115,6 +115,7 @@ it('tests behavior without touching internals', () => {
 ```
 
 **Never use `Object.defineProperty` in tests to:**
+
 - Access or modify private members (fields, methods)
 - Override methods or properties of objects under test
 - Expose internal state for test assertions

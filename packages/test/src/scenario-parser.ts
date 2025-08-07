@@ -29,13 +29,13 @@ export async function loadScenarios(scenariosInput?: string): Promise<TestScenar
   // Load from file
   try {
     const content = await readFile(scenariosInput, 'utf-8');
-    const parsed = parseYAML(content) as { scenarios?: unknown[] };
+    const parsed = parseYAML(content) as unknown;
     
-    if (!parsed || typeof parsed !== 'object' || !('scenarios' in parsed) || !Array.isArray(parsed.scenarios)) {
+    if (!parsed || typeof parsed !== 'object' || !('scenarios' in parsed) || !Array.isArray((parsed as { scenarios?: unknown }).scenarios)) {
       throw new Error('Invalid scenario file format: expected { scenarios: [...] }');
     }
 
-    return validateScenarios(parsed.scenarios);
+    return validateScenarios((parsed as { scenarios: unknown[] }).scenarios);
   } catch (error) {
     throw new Error(`Failed to load scenarios from ${scenariosInput}: ${error instanceof Error ? error.message : String(error)}`);
   }

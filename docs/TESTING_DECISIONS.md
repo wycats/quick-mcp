@@ -32,17 +32,20 @@ Quick-MCP is fundamentally an HTTP proxy server that converts between MCP and RE
 We adopt **SuperTest** as our primary HTTP testing infrastructure because:
 
 #### ✅ **Aligns with Philosophy**
+
 - **No mocking**: Tests real HTTP servers and request flows
 - **Real implementations**: Uses actual Express servers, not simulated behavior
 - **Controlled inputs**: We control the test server endpoints and responses
 
 #### ✅ **Technical Benefits**
+
 - **Auto-management**: Automatically starts/stops test servers on ephemeral ports
 - **Fluent API**: Clean, readable test syntax with built-in assertions
 - **Timeout support**: Built on SuperAgent which has robust timeout handling
 - **Industry standard**: Battle-tested in Express.js ecosystem (13k+ GitHub stars)
 
 #### ✅ **Testing Capabilities**
+
 - **Real timeouts**: Can test actual network timeout behavior
 - **Authentication**: Tests real header forwarding through HTTP stack  
 - **Error conditions**: Network errors, malformed responses, connection failures
@@ -108,12 +111,14 @@ describe('Quick-MCP HTTP Behavior', () => {
 ### Consequences
 
 #### ✅ **Positive**
+
 - Tests reflect real-world usage patterns
 - Higher confidence in HTTP behavior
 - Catches integration issues that mocks miss
 - Aligns with project's "no mocks" philosophy
 
 #### ⚠️ **Trade-offs**
+
 - Tests may be slightly slower than pure unit tests
 - Requires managing test server lifecycle
 - Express ecosystem dependency (acceptable given existing demo server)
@@ -128,6 +133,7 @@ describe('Quick-MCP HTTP Behavior', () => {
 ### Review Schedule
 
 This decision will be reviewed if:
+
 - SuperTest maintenance status changes significantly
 - Alternative testing approaches emerge that better align with our philosophy
 - Performance issues arise that require reconsidering the approach

@@ -259,10 +259,10 @@ describe('Transport Layer', () => {
       
       // Force an error condition by manipulating the server object
       // This is a bit artificial but covers the error handling path
-      const httpTransport = transport as any;
+      const httpTransport = transport as { server?: { close: (callback?: (error?: Error) => void) => void } };
       if (httpTransport.server) {
         const originalClose = httpTransport.server.close;
-        httpTransport.server.close = (callback: any) => {
+        httpTransport.server.close = (callback?: (error?: Error) => void) => {
           if (callback) callback(new Error('Forced close error'));
         };
         

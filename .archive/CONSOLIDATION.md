@@ -7,6 +7,7 @@ This document outlines the mandatory **human consolidation phase** following our
 ## Exploration Phase Summary
 
 **What we accomplished with Claude:**
+
 - ✅ Complete `mcpify` → `quick-mcp` branding migration
 - ✅ Fixed all TypeScript diagnostics and ESLint errors  
 - ✅ Added comprehensive development infrastructure
@@ -25,6 +26,7 @@ This document outlines the mandatory **human consolidation phase** following our
 #### **🔥 IMMEDIATE: Large Files Requiring Decomposition**
 
 **`packages/core/src/main.ts` (389 lines) - GOD OBJECT ⚠️**
+
 - [ ] **CRITICAL: Mixed concerns** - CLI + library + config + server + environment parsing
 - [ ] **Extract Configuration**: `QuickMcpConfiguration` class for environment handling
 - [ ] **Extract CLI Module**: `QuickMcpCli` separate from library code  
@@ -33,6 +35,7 @@ This document outlines the mandatory **human consolidation phase** following our
 - [ ] **Large static method**: `fromEnvironment()` 33 lines needs decomposition
 
 **`packages/core/src/openapi.ts` (390 lines) - KITCHEN SINK ⚠️**
+
 - [ ] **CRITICAL: Multiple responsibilities** - Parsing + Registration + Querying + Validation
 - [ ] **Extract Parser**: `OpenApiSpecParser` for parsing logic only
 - [ ] **Extract Registry**: `McpToolRegistry` for tool registration only  
@@ -41,6 +44,7 @@ This document outlines the mandatory **human consolidation phase** following our
 - [ ] **Fix error handling**: Replace `console.error(validation)` with proper errors
 
 **`packages/core/src/request/request-builder.ts` (195 lines) - LARGE FUNCTION ⚠️**
+
 - [ ] **Extract abstractions**: URL building + header processing + body formatting mixed
 - [ ] **Improve naming**: Generic `args`, `config`, `init` → domain-specific names
 - [ ] **Split responsibilities**: `buildRequestInit()` handles too much
@@ -48,11 +52,13 @@ This document outlines the mandatory **human consolidation phase** following our
 #### **🚨 Production Risk: Error Handling Vibe Smells**
 
 **Console Statements in Library Code (3 instances):**
+
 - [ ] `packages/core/src/main.ts:145` - `console.warn()` for AUTH_HEADERS parsing
 - [ ] `packages/core/src/openapi.ts:223` - `console.error()` for validation  
 - [ ] `packages/core/src/main.ts:301` - `process.exit(1)` in library code
 
 **Generic Error Patterns:**
+
 - [ ] **Silent failures**: `console.warn()` then continue with empty values
 - [ ] **No error types**: All errors are generic `Error` instances
 - [ ] **No user context**: Technical stack traces exposed to CLI users
@@ -61,6 +67,7 @@ This document outlines the mandatory **human consolidation phase** following our
 ### 2. **Test Quality Assessment - VIBE EXPLORATION ONLY**
 
 #### **🚨 Missing Critical Edge Cases (Production Risk):**
+
 - [ ] **Malformed OpenAPI specs**: Empty, circular refs, invalid syntax
 - [ ] **Network failures**: Timeouts, DNS failures, 500 errors during spec loading
 - [ ] **Memory pressure**: Large OpenAPI specs (>100 operations, deep nesting)
@@ -70,7 +77,9 @@ This document outlines the mandatory **human consolidation phase** following our
 - [ ] **Authentication edge cases**: Expired tokens, malformed auth headers
 
 #### **🔍 Current Test Reality Check:**
+
 **Happy Path Only**: Existing tests assume perfect conditions
+
 - ✅ Valid OpenAPI specs work
 - ❌ No malformed spec handling
 - ❌ No network failure recovery  
@@ -79,6 +88,7 @@ This document outlines the mandatory **human consolidation phase** following our
 - ❌ No concurrent request testing
 
 #### **Required Test Scenarios:**
+
 ```typescript
 describe("Production Edge Cases", () => {
   describe("OpenAPI Spec Handling", () => {
@@ -119,13 +129,15 @@ describe("Production Edge Cases", () => {
 
 ### 3. **Error Handling Review**
 
-#### Current Issues:
+#### Current Issues
+
 - [ ] **Generic error handling**: Too many `console.error()` + re-throw patterns
 - [ ] **Error context**: Missing operational context in error messages
 - [ ] **User experience**: CLI errors need better user-facing messages
 - [ ] **Debugging**: Error stack traces may expose internal implementation
 
-#### Improvements Needed:
+#### Improvements Needed
+
 ```typescript
 // Replace generic patterns with domain-specific errors:
 class OpenApiParsingError extends Error {
@@ -138,7 +150,8 @@ class OpenApiParsingError extends Error {
 
 ### 4. **Documentation & Intent**
 
-#### Missing Design Documentation:
+#### Missing Design Documentation
+
 - [ ] **Architecture decisions**: Why this proxy approach vs. code generation?
 - [ ] **Extension system**: How `x-quick-mcp` extensions should evolve
 - [ ] **Performance characteristics**: Memory usage, latency expectations
@@ -147,7 +160,8 @@ class OpenApiParsingError extends Error {
 
 ### 5. **Production Readiness Assessment**
 
-#### Infrastructure Gaps:
+#### Infrastructure Gaps
+
 - [ ] **Health checks**: `/health` endpoint mentioned but not implemented
 - [ ] **Metrics**: No operational metrics collection
 - [ ] **Logging**: File rotation configured but no structured logging
@@ -159,6 +173,7 @@ class OpenApiParsingError extends Error {
 ### **🚨 Critical Files Requiring Immediate Attention:**
 
 **File Size Analysis (VIBE_CODING_PRACTICES.md max: 200 lines):**
+
 - ❌ `main.ts` - 389 lines (95% over limit)
 - ❌ `openapi.ts` - 390 lines (95% over limit)  
 - ⚠️ `request-builder.ts` - 195 lines (approaching limit)
@@ -166,6 +181,7 @@ class OpenApiParsingError extends Error {
 ### **🔥 Specific Vibe Smells by Category:**
 
 #### **Mixed Concerns (God Objects):**
+
 ```typescript
 // main.ts - EVERYTHING in one file:
 class QuickMCP {
@@ -178,6 +194,7 @@ const program = new Command() /* CLI definition in library file */
 ```
 
 #### **Generic Variable Names (AI-Generated Patterns):**
+
 ```typescript
 // Throughout codebase:
 const { spec } = await parseSpecPath(path);     // "spec" everywhere
@@ -187,6 +204,7 @@ function buildRequest(app, op, args)            // args, op generic
 ```
 
 #### **Type Safety Escape Hatches:**
+
 ```typescript
 // openapi.ts:229 - Admitting defeat on typing:
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -194,6 +212,7 @@ return compileErrors(validation as any);
 ```
 
 #### **Production Risk Patterns:**
+
 ```typescript
 // Silent failures with console logging:
 catch (error) {
@@ -209,6 +228,7 @@ process.exit(1); // Should throw error instead
 ### **🎯 Required Abstractions (Domain-Driven Design):**
 
 #### **Current Generic → Should Be Domain-Specific:**
+
 ```typescript
 // BEFORE (Vibe/Generic):
 function loadEnvironmentConfig(): EnvironmentConfig
@@ -238,6 +258,7 @@ class McpHttpRequestBuilder {
 ## 📋 Consolidation Action Plan
 
 ### Phase 1: Immediate (1-2 hours)
+
 1. **Extract Configuration Service**
    - Move environment loading to dedicated class
    - Add proper validation with helpful error messages
@@ -249,6 +270,7 @@ class McpHttpRequestBuilder {
    - Remove generic console.error patterns
 
 ### Phase 2: Core Quality (2-3 hours)
+
 3. **Add Real Tests**
    - Edge cases for malformed OpenAPI specs
    - Network failure scenarios
@@ -261,6 +283,7 @@ class McpHttpRequestBuilder {
    - Add troubleshooting guides
 
 ### Phase 3: Production Hardening (2-3 hours)
+
 5. **Complete Infrastructure**
    - Implement actual health checks
    - Add structured logging with correlation IDs

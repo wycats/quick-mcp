@@ -3,6 +3,7 @@
 ## Current Performance Analysis
 
 ### API Usage ✅
+
 - **Correctly using AI SDK's generateText() API**
 - **Proper tool conversion and provider setup**
 - **No accidental retries or loops**
@@ -22,6 +23,7 @@
 ## Recommended Solutions
 
 ### 1. Hardware Acceleration (Most Effective)
+
 ```bash
 # Check if GPU is available
 ollama list
@@ -31,6 +33,7 @@ export OLLAMA_NUM_GPU=1
 ```
 
 ### 2. Use Smaller/Faster Models
+
 ```bash
 # Instead of llama3.2 (7B), try:
 pnpm quick-mcp-test verify-provider ollama:phi       # 2.7B parameters
@@ -39,6 +42,7 @@ pnpm quick-mcp-test verify-provider ollama:qwen:0.5b # 0.5B parameters
 ```
 
 ### 3. Ollama Performance Settings
+
 ```bash
 # Increase thread count
 export OLLAMA_NUM_THREADS=8
@@ -51,6 +55,7 @@ ollama pull llama3.2:7b-q4_0  # 4-bit quantization
 ```
 
 ### 4. Streaming Implementation (Future)
+
 ```typescript
 // Consider using streamText() instead of generateText()
 const result = await streamText({
@@ -68,6 +73,7 @@ for await (const chunk of result.textStream) {
 ```
 
 ### 5. Test Configuration
+
 ```bash
 # Increase timeout for local models
 pnpm quick-mcp-test run scenarios.yaml \

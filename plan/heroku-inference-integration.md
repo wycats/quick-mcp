@@ -7,12 +7,14 @@ Heroku Managed Inference and Agents Add-on provides access to large foundational
 ## Heroku Managed Inference Capabilities
 
 ### **Available Models**
+
 - **Chat Models**: Claude 3.5 Sonnet, Claude 3.5 Haiku, Claude 3.7 Sonnet
 - **Embedding Model**: Cohere Embed Multilingual  
 - **Image Generation**: Stable Image Ultra
 - **Regions**: US and EU availability
 
 ### **Key Features**
+
 - OpenAI-compatible API for easy integration
 - Secure hosting within AWS accounts (data never leaves secure environment)
 - Direct Heroku CLI integration via `@heroku/plugin-ai`
@@ -26,18 +28,21 @@ Heroku Managed Inference and Agents Add-on provides access to large foundational
 **Vision**: Use Heroku Inference to automatically validate and improve MCP tool definitions during development.
 
 #### **Implementation**
+
 ```bash
 # Enhanced quick-mcp CLI with AI validation
 quick-mcp dev openapi.yaml --ai-validate
 ```
 
 **Features**:
+
 - Analyze tool descriptions for clarity and completeness
 - Suggest better example prompts based on API functionality
 - Validate semantic consistency across tool annotations
 - Generate missing response hints automatically
 
 #### **Technical Approach**
+
 ```javascript
 // Integration with Heroku Inference
 const herokuInference = require('@heroku/inference-client');
@@ -74,6 +79,7 @@ async function validateToolDescriptions(tools) {
 **Vision**: Automatically generate realistic example prompts for each MCP tool based on its OpenAPI definition.
 
 #### **Overlay Enhancement**
+
 ```toml
 # .quick-mcp/overlays/getUser.toml
 [ai_generation]
@@ -84,6 +90,7 @@ max_examples = 5
 ```
 
 #### **Implementation**
+
 ```javascript
 async function generateExamplePrompts(operation) {
   const prompt = `
@@ -111,12 +118,14 @@ async function generateExamplePrompts(operation) {
 **Vision**: Use AI to automatically classify tool intents and semantic types from OpenAPI operations.
 
 #### **Features**
+
 - Analyze operation names, descriptions, and HTTP methods
 - Suggest appropriate intent categories (`lookup`, `create`, `update`, `delete`, `analyze`)
 - Generate semantic type hierarchies (`entity:User`, `action:Notification`)
 - Provide confidence scores for classifications
 
 #### **Implementation**
+
 ```javascript
 async function classifyIntent(operation) {
   const prompt = `
@@ -154,6 +163,7 @@ async function classifyIntent(operation) {
 **Vision**: Help developers debug MCP tool issues using natural language queries.
 
 #### **CLI Integration**
+
 ```bash
 # Ask AI about MCP tool issues
 quick-mcp debug "Why isn't my getUser tool being called correctly?"
@@ -162,6 +172,7 @@ quick-mcp suggest improvements
 ```
 
 #### **Implementation**
+
 ```javascript
 async function debugAssistant(query, mcpContext) {
   const prompt = `
@@ -191,6 +202,7 @@ async function debugAssistant(query, mcpContext) {
 **Vision**: Use AI to generate better response hints and formatting templates based on API response schemas.
 
 #### **Features**
+
 - Analyze response schemas to suggest formatting patterns
 - Generate user-friendly response templates
 - Create conditional formatting based on response content
@@ -210,11 +222,13 @@ git push heroku main
 ```
 
 The Heroku Node.js buildpack will automatically:
+
 - Detect the Node.js/pnpm project
 - Install dependencies
 - Set the start command to use `--env` for 12-factor configuration
 
 ### **Environment Configuration**
+
 ```bash
 # Required environment variables
 HEROKU_INFERENCE_API_KEY=your_key_here
@@ -223,6 +237,7 @@ QUICK_MCP_AI_FEATURES=validation,generation,debugging
 ```
 
 ### **Service Architecture**
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Quick-MCP CLI    │────│  Heroku Dyno    │────│ Heroku Inference│
@@ -236,18 +251,21 @@ QUICK_MCP_AI_FEATURES=validation,generation,debugging
 ## Implementation Phases
 
 ### **Phase 1: Basic AI Integration (Weeks 1-3)**
+
 - [ ] Heroku Inference client setup
 - [ ] Basic tool description validation
 - [ ] Simple example prompt generation
 - [ ] CLI integration for AI features
 
 ### **Phase 2: Advanced AI Features (Weeks 4-6)**
+
 - [ ] Intent classification and semantic typing
 - [ ] Smart response hint generation
 - [ ] AI-powered debugging assistant
 - [ ] Confidence scoring and improvement suggestions
 
 ### **Phase 3: Production Features (Weeks 7-9)**
+
 - [ ] Batch processing for large API specs
 - [ ] Usage analytics and optimization
 - [ ] Custom model fine-tuning (if available)
@@ -256,6 +274,7 @@ QUICK_MCP_AI_FEATURES=validation,generation,debugging
 ## Developer Experience
 
 ### **Enhanced CLI Commands**
+
 ```bash
 # AI-enhanced development workflow
 quick-mcp init myapi.yaml --ai-setup
@@ -266,6 +285,7 @@ quick-mcp optimize --analyze-usage
 ```
 
 ### **Configuration Options**
+
 ```toml
 # .quick-mcp/config.toml
 [ai]
@@ -286,12 +306,14 @@ include_edge_cases = true
 ## Business Value
 
 ### **For Developers**
+
 1. **Faster Development**: AI-generated examples and descriptions
 2. **Better Quality**: Automated validation and improvement suggestions  
 3. **Easier Debugging**: Natural language troubleshooting assistance
 4. **Reduced Friction**: Smart defaults and auto-completion
 
 ### **For Heroku**
+
 1. **Increased Add-on Usage**: Direct integration drives Heroku Inference adoption
 2. **Developer Retention**: Enhanced platform value proposition
 3. **Showcase Implementation**: Demonstrates real-world AI integration patterns
@@ -299,12 +321,14 @@ include_edge_cases = true
 ## Success Metrics
 
 ### **Technical Metrics**
+
 - AI feature adoption rate (target: >60% of Quick-MCP users)
 - Quality improvement in generated annotations (measured via user feedback)
 - Debugging session success rate (target: >80% issues resolved)
 - Performance impact on development workflow (target: <10% overhead)
 
 ### **Business Metrics**
+
 - Heroku Inference add-on activation rate from Quick-MCP users
 - User retention improvement with AI features enabled
 - Community contributions and examples generated
@@ -312,11 +336,13 @@ include_edge_cases = true
 ## Cost Considerations
 
 ### **Heroku Inference Pricing Impact**
+
 - Usage-based billing model aligns with development workflows
 - Batch processing and caching can optimize costs
 - Development-time usage patterns typically lower volume than production
 
 ### **Cost Optimization Strategies**
+
 1. **Model Selection**: Use faster, cheaper models for simple tasks
 2. **Caching**: Store AI-generated results to avoid redundant calls
 3. **Batch Processing**: Combine multiple operations in single requests
@@ -325,11 +351,13 @@ include_edge_cases = true
 ## Risk Assessment
 
 ### **Technical Risks**
+
 - **Model Availability**: Dependence on Heroku Inference uptime
 - **Cost Overrun**: Unexpected usage patterns could increase bills
 - **Quality Variance**: AI-generated content may need human review
 
 ### **Mitigation Strategies**
+
 - Implement graceful fallbacks when AI services are unavailable
 - Provide cost monitoring and usage controls
 - Include human-in-the-loop validation for critical generated content

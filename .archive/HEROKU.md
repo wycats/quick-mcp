@@ -55,6 +55,7 @@ Deploy to Heroku instantly:
    ```
 
 3. **Deploy**
+
    ```bash
    git push heroku main
    ```
@@ -108,9 +109,11 @@ Once deployed, your Quick-MCP server can be attached to Heroku's Managed Inferen
 
 1. **Deploy your MCP server** (using steps above)
 2. **Attach to inference add-on**:
+
    ```bash
    heroku addons:create heroku-inference:basic
    ```
+
 3. **Tools are automatically registered** and available via `/v1/agents/heroku` endpoints
 
 ## Safety and Security

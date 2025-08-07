@@ -174,7 +174,7 @@ expect.extend({
 declare module 'vitest' {
   // make it awaitable to avoid dangling promises
    
-  interface Assertion<T> {
+  interface Assertion {
     toMatchRequest(expected: ExpectedRequest): Promise<void>;
   }
   interface AsymmetricMatchersContaining {

@@ -13,6 +13,7 @@ This directory contains custom ESLint rules specific to the Quick-MCP project. B
 **Scope**: Only applies to test files (`.test.ts`, `.spec.ts`, and files in `tests/` directory)
 
 **What it detects**:
+
 - Mock function creation: `jest.fn()`, `vi.mock()`, `sinon.mock()`
 - Spy creation: `jest.spyOn()`, `vi.spy()`, `sinon.spy()`
 - Stub creation: `jest.stub()`, `vi.stub()`, `sinon.stub()`
@@ -34,6 +35,7 @@ const client = createTestClient();
 ```
 
 **Configuration**:
+
 ```javascript
 rules: {
   'custom/no-mocks-spies': 'error', // In test files
@@ -50,6 +52,7 @@ rules: {
 **Scope**: Applies to all TypeScript files
 
 **What it detects**:
+
 - Import statements without `.ts` extension where a `.ts` file exists
 - Export statements without `.ts` extension where a `.ts` file exists
 - Only checks relative imports (starting with `./` or `../`)
@@ -71,6 +74,7 @@ import { LogLayer } from 'loglayer';
 ```
 
 **Configuration**:
+
 ```javascript
 rules: {
   'custom/require-ts-extensions': 'error', // Enforced everywhere
@@ -131,6 +135,7 @@ pnpm lint
 ### Auto-fix Examples
 
 **Before auto-fix**:
+
 ```typescript
 // test.ts
 import { jest } from '@jest/globals';
@@ -149,6 +154,7 @@ describe('test', () => {
 ```
 
 **After auto-fix**:
+
 ```typescript
 // test.ts
 import { helper } from './utils.ts';
@@ -181,6 +187,7 @@ const spy = jest.spyOn(console, 'log');
 ## Integration with Existing Tools
 
 These rules work seamlessly with:
+
 - **TypeScript**: Respects TypeScript module resolution
 - **Vitest**: Encourages real implementations over mocks
 - **Import sorting**: Works with `eslint-plugin-import` rules

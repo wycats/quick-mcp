@@ -71,7 +71,7 @@ export class ScenarioComposer {
     return {
       ...base,
       ...override,
-      expect: [...(base.expect || []), ...(override.expect || [])],
+      expect: [...base.expect, ...override.expect],
       variables: { ...base.variables, ...override.variables },
       tags: [...(base.tags ?? []), ...(override.tags ?? [])]
     };
@@ -107,7 +107,7 @@ export class ScenarioComposer {
     return scenario.steps.map((step, index) => ({
       name: `${scenario.name} - Step ${index + 1}: ${step.name}`,
       prompt: this.interpolateString(step.prompt),
-      expect: step.expect || scenario.expect || [],
+      expect: step.expect ?? scenario.expect,
       timeout: scenario.timeout,
       skip: scenario.skip ?? this.evaluateCondition(step.condition)
     }));
@@ -117,7 +117,7 @@ export class ScenarioComposer {
     return {
       ...scenario,
       prompt: this.interpolateString(scenario.prompt),
-      expect: scenario.expect || []
+      expect: scenario.expect
     };
   }
 

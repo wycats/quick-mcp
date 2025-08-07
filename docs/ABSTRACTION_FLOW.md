@@ -45,6 +45,7 @@ sequenceDiagram
 > **Note**: Quick-MCP uses simple type aliases and validation functions instead of complex domain objects. This keeps the codebase lean while maintaining type safety.
 
 ### **1. Type Layer**
+
 ```text
 ┌─────────────┬──────────────┬───────────────┐
 │    Port     │   Headers    │   SpecUrl     │
@@ -56,15 +57,18 @@ sequenceDiagram
 ```
 
 **Validation Functions** (`types.ts`):
+
 - `validatePort(port: number | string): Port` - Ensures 1-65535
 - `validateSpecUrl(url: string): SpecUrl` - Validates URL format
 - `getDefaultPort(): Port` - Returns environment-based default
 
 **Header Utilities** (`utils/headers.ts`):
+
 - `parseHeaderString(str: string): Headers` - Parse "Key=Value"
 - `parseHeadersFromJSON(json: string): Headers` - Parse JSON headers
 
 ### **2. Configuration Layer**
+
 ```text
 ServerOptions
      │
@@ -82,6 +86,7 @@ ConfigurationBuilder
 ```
 
 ### **3. Operation Layer**
+
 ```text
 OpenAPI Operation
      │
@@ -103,6 +108,7 @@ QuickMcpOperation
 ```
 
 ### **4. Schema Transformation**
+
 ```text
 OpenAPI Schema          JSONSchema              Zod Schema
 ┌──────────────┐       ┌──────────────┐       ┌──────────────┐

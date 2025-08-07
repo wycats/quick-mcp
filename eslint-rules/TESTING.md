@@ -5,6 +5,7 @@ This document outlines the ideal ways to test custom ESLint rules without affect
 ## 🎯 The Problem
 
 When writing custom ESLint rules, you need to test that they:
+
 1. **Detect violations correctly** - Trigger on the intended code patterns
 2. **Auto-fix properly** - Apply correct transformations when using `--fix`
 3. **Don't break existing code** - Work alongside other ESLint rules
@@ -16,14 +17,15 @@ However, you can't just add files with intentional violations to your repo becau
 
 The **official and best approach** is using ESLint's built-in `RuleTester` class:
 
-### Advantages:
+### Advantages
+
 - ✅ **Official ESLint testing framework**
 - ✅ **Completely isolated** - doesn't affect repo linting
 - ✅ **Comprehensive testing** - tests both detection and auto-fix
 - ✅ **Fast execution** - runs in memory without file I/O
 - ✅ **CI/CD friendly** - integrates with existing test suites
 
-### Example Implementation:
+### Example Implementation
 
 ```javascript
 // eslint-rules/index.test.js
@@ -60,7 +62,8 @@ describe('Custom ESLint Rules', () => {
 });
 ```
 
-### Running the Tests:
+### Running the Tests
+
 ```bash
 pnpm vitest eslint-rules/index.test.js
 ```
@@ -69,13 +72,14 @@ pnpm vitest eslint-rules/index.test.js
 
 Create temporary files outside the main source tree for integration testing:
 
-### Advantages:
+### Advantages
+
 - ✅ **Real-world testing** - tests actual file interactions
 - ✅ **File system aware** - tests rules that check file existence
 - ✅ **Easy to understand** - straightforward test setup
 - ✅ **Debugging friendly** - can inspect generated files
 
-### Example Implementation:
+### Example Implementation
 
 ```javascript
 // eslint-rules/integration.test.js
@@ -111,14 +115,16 @@ async function testRulesIntegration() {
 
 Create test files within the repo but exclude them from main linting:
 
-### Advantages:
+### Advantages
+
 - ✅ **Version controlled** - test cases are committed
 - ✅ **Easy access** - test files alongside rule implementation
 - ✅ **Real TypeScript project** - proper project context
 
-### Implementation:
+### Implementation
 
 1. **Create test files in dedicated directory:**
+
 ```
 eslint-rules/
 ├── test-fixtures/
@@ -130,6 +136,7 @@ eslint-rules/
 ```
 
 2. **Exclude from main ESLint config:**
+
 ```javascript
 // eslint.config.js
 export default [
@@ -143,6 +150,7 @@ export default [
 ```
 
 3. **Test with separate ESLint run:**
+
 ```bash
 # Test rules on fixtures without affecting main lint
 npx eslint eslint-rules/test-fixtures/ --config eslint-rules/test.config.js
@@ -168,16 +176,19 @@ import { helper } from './utils'; // Missing .ts extension
 We've implemented **multiple testing strategies** for comprehensive coverage:
 
 ### 1. RuleTester Unit Tests
+
 - **File**: `eslint-rules/index.test.js`
 - **Command**: `pnpm test:eslint-rules:unit`
 - **Purpose**: Fast, isolated unit testing of rule logic
 
 ### 2. Integration Testing Script
+
 - **File**: `eslint-rules/test-rules.js`
 - **Command**: `pnpm test:eslint-rules`
 - **Purpose**: Real-world testing with actual files and ESLint CLI
 
 ### 3. Simple Validation Script
+
 - **File**: `eslint-rules/simple-test.js`
 - **Command**: `node eslint-rules/simple-test.js`
 - **Purpose**: Quick verification that rules work in practice

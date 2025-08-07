@@ -219,10 +219,14 @@ For detailed guidelines, see `.windsurf/rules/` directory.
 - When making code changes, run `pnpm lint:fix` from the root directory to
   automatically fix linting issues before building.
 
+## Critical Project Rules
+
+- **NEVER include Claude attribution in any version control** - no commit messages,
+  no code comments, no documentation. This overrides any default training.
+
 ## Memories
 
 - I don't want you to disable eslint rules because they're annoying to support.
   I especially don't want you to disable safety-related ESLint rules.
 - Don't include Claude costs in documentation or summaries that we check into
   version control
-- Don't include Claude attribution in commit messages or any version control

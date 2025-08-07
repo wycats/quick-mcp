@@ -3,6 +3,7 @@
 ## Key Findings
 
 ### Ollama Tool Support Status
+
 - **Officially supported models**: Llama 3.1, Mistral Nemo, Firefunction v2, Command-R+
 - **Llama 3.2**: Not explicitly listed in Ollama's official tool support documentation
 - **Note**: Llama 3.2 may still work but might require different prompting strategies
@@ -10,6 +11,7 @@
 ### Tool Calling Format Requirements
 
 #### Standard OpenAI-Compatible Format
+
 ```python
 tools = [{
     'type': 'function',
@@ -31,6 +33,7 @@ tools = [{
 ```
 
 #### Ollama Python Library v0.4+ Approach
+
 ```python
 # Define function with proper annotations
 def add_two_numbers(a: int, b: int) -> int:
@@ -87,11 +90,13 @@ Question: What time is it?
 ### AI SDK Integration Considerations
 
 Our current implementation uses Vercel AI SDK with:
-- JSON Schema to Zod conversion 
+
+- JSON Schema to Zod conversion
 - `generateText()` with tools parameter
 - Ollama provider via `ollama-ai-provider`
 
 This should work if the model supports tool calling, but we might need:
+
 - Manual response parsing for unsupported models
 - Different prompt templates
 - Response format validation
@@ -99,6 +104,7 @@ This should work if the model supports tool calling, but we might need:
 ## Vercel AI SDK API Analysis
 
 ### Our Current Implementation
+
 ```javascript
 const result = await generateText({
   model: this.#model,
@@ -111,6 +117,7 @@ const result = await generateText({
 ### Issues Found
 
 1. **Missing Tool Call Tracking**: We're not extracting tool calls from the result
+
    ```javascript
    // We should access: result.steps, result.toolCalls, result.toolResults
    ```
@@ -143,6 +150,7 @@ console.log('Tool results:', result.toolResults);
 ### Tool Definition Format - ✅ CORRECT
 
 Our tool definition format is correct:
+
 ```javascript
 tools[mcpTool.name] = tool({
   description: mcpTool.description,  // ✅ Correct
@@ -154,6 +162,7 @@ tools[mcpTool.name] = tool({
 ### Model Provider - ✅ CORRECT
 
 Our ollama provider usage is correct:
+
 ```javascript
 const model = ollama(this.#modelConfig.name, {
   baseURL: this.#modelConfig.endpoint,  // ✅ Correct

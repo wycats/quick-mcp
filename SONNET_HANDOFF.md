@@ -3,6 +3,7 @@
 ## Current State
 
 Quick-MCP is in the final stages of migration but has critical P0 issues that block release:
+
 - **MCP compliance failures**: Tool calls are broken due to incorrect schema transformation
 - **Test coverage drop**: Coverage decreased from 93% to 81% after recent changes
 - **Architecture concerns**: Opus review identified coupling issues in the test package
@@ -14,11 +15,13 @@ Quick-MCP is in the final stages of migration but has critical P0 issues that bl
 **Problem**: OpenAPI schemas are not being correctly transformed to MCP-compatible JSON schemas, causing tool calls to fail.
 
 **Files to examine**:
+
 - `/home/ykatz/Code/quick-mcp/packages/core/src/openapi.ts` - Schema transformation logic
 - `/home/ykatz/Code/quick-mcp/packages/core/src/schema/openapi-to-jsonschema.ts` - Conversion implementation
 - `/home/ykatz/Code/quick-mcp/tests/src/resource-advanced.test.ts` - Failing test case
 
 **Verification commands**:
+
 ```bash
 # Run the specific failing test
 pnpm vitest tests/src/resource-advanced.test.ts -t "converts operations with request bodies to tools"
@@ -28,6 +31,7 @@ pnpm test -- --grep "MCP"
 ```
 
 **Success criteria**:
+
 - All tests in `resource-advanced.test.ts` pass
 - Tool schemas include proper `inputSchema` wrapping
 - No `additionalProperties: false` at wrong nesting levels
@@ -37,11 +41,13 @@ pnpm test -- --grep "MCP"
 **Problem**: Coverage dropped from 93% to 81%, indicating untested code paths.
 
 **Files to examine**:
+
 - Coverage report: Run `pnpm test:coverage` and check `coverage/lcov-report/index.html`
 - `/home/ykatz/Code/quick-mcp/packages/core/src/transport/index.ts` - New transport code
 - `/home/ykatz/Code/quick-mcp/packages/test/src/` - New test package lacking coverage
 
 **Verification commands**:
+
 ```bash
 # Generate coverage report
 pnpm test:coverage
@@ -54,6 +60,7 @@ find packages -name "*.ts" -not -name "*.test.ts" -not -name "*.d.ts" | xargs gr
 ```
 
 **Success criteria**:
+
 - Overall coverage ≥ 90%
 - No critical paths with < 80% coverage
 - All new code in transport layer has tests
@@ -63,11 +70,13 @@ find packages -name "*.ts" -not -name "*.test.ts" -not -name "*.d.ts" | xargs gr
 **Problem**: Opus review identified tight coupling and missing abstractions in the test package.
 
 **Files to examine**:
+
 - `/home/ykatz/Code/quick-mcp/packages/test/OPUS_ARCHITECTURAL_REVIEW.md` - Full review
 - `/home/ykatz/Code/quick-mcp/packages/test/src/llm-runner.ts` - Needs provider abstraction
 - `/home/ykatz/Code/quick-mcp/packages/test/src/mcp-client.ts` - Needs interface extraction
 
 **Verification commands**:
+
 ```bash
 # Check for interface definitions
 grep -r "interface" packages/test/src/
@@ -80,6 +89,7 @@ pnpm quick-mcp-test verify-provider claude-3-opus-20240229
 ```
 
 **Success criteria**:
+
 - Extract `ILLMProvider` interface
 - Create `IMCPClient` interface
 - Provider-specific code isolated to adapters
@@ -90,11 +100,13 @@ pnpm quick-mcp-test verify-provider claude-3-opus-20240229
 **Problem**: Custom ESLint rules lack proper documentation and examples.
 
 **Files to examine**:
+
 - `/home/ykatz/Code/quick-mcp/eslint-rules/README.md` - Needs completion
 - `/home/ykatz/Code/quick-mcp/eslint-rules/index.js` - Rule implementations
 - `/home/ykatz/Code/quick-mcp/eslint-rules/TESTING.md` - Testing guide needs work
 
 **Verification commands**:
+
 ```bash
 # Run ESLint with custom rules
 pnpm lint
@@ -107,6 +119,7 @@ grep -A5 "meta:" eslint-rules/index.js
 ```
 
 **Success criteria**:
+
 - Each rule has documentation with examples
 - Testing guide shows how to add new rules
 - All rules have corresponding tests
@@ -116,11 +129,13 @@ grep -A5 "meta:" eslint-rules/index.js
 **Problem**: Need to ensure one-click deployment works correctly.
 
 **Files to examine**:
+
 - `/home/ykatz/Code/quick-mcp/app.json` - Heroku app configuration
 - `/home/ykatz/Code/quick-mcp/Procfile` - Process types
 - `/home/ykatz/Code/quick-mcp/packages/core/src/transport/http.ts` - HTTP transport
 
 **Verification commands**:
+
 ```bash
 # Validate app.json
 cat app.json | jq .
@@ -133,6 +148,7 @@ grep -r "process.env" packages/core/src/
 ```
 
 **Success criteria**:
+
 - `app.json` has all required fields
 - Environment variables documented
 - HTTP transport works on dynamic port
@@ -167,6 +183,6 @@ pnpm demo:test
 
 ## Resources
 
-- MCP Specification: https://modelcontextprotocol.io/docs/specification
-- OpenAPI to JSON Schema rules: https://swagger.io/docs/specification/data-models/
-- Vitest docs for debugging: https://vitest.dev/guide/debugging.html
+- MCP Specification: <https://modelcontextprotocol.io/docs/specification>
+- OpenAPI to JSON Schema rules: <https://swagger.io/docs/specification/data-models/>
+- Vitest docs for debugging: <https://vitest.dev/guide/debugging.html>

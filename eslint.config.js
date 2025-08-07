@@ -183,6 +183,7 @@ export default [
       '**/coverage/**',
       '*.config.js', // Ignore config files
       'packages/demo/src/**/*.js', // Ignore demo JS files
+      'packages/test/scripts/**', // Ignore utility scripts
       '*.mjs',
       '*.cjs',
       'eslint.config.js',

@@ -4,7 +4,7 @@ trigger: manual
 
 # Advanced Testing Guidelines
 
-This document covers advanced testing approaches for the MCP-ify project. 
+This document covers advanced testing approaches for the MCP-ify project.
 For basic test structure and abstractions, see [testing-basics.md](testing-basics.md).
 
 ## Dependency Injection Over Mocking

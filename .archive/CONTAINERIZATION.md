@@ -104,8 +104,9 @@ git push heroku main
 ```
 
 The buildpack will automatically:
+
 - Detect Node.js and pnpm
-- Install dependencies 
+- Install dependencies
 - Set the start command to use `--env` flag for 12-factor configuration
 
 #### Google Cloud Run

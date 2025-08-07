@@ -30,16 +30,19 @@ npx @quick-mcp/test --spec ./api.yaml --scenarios comprehensive --models gpt-4o,
 ## Usage
 
 ### Basic Testing
+
 ```bash
 quick-mcp-test --spec <openapi-spec> --model <model-name>
 ```
 
 ### Custom Scenarios
+
 ```bash
 quick-mcp-test --spec ./api.yaml --scenarios ./test-scenarios.yaml --model gpt-4o
 ```
 
 ### Multi-Model Validation
+
 ```bash
 quick-mcp-test --spec ./api.yaml --models gpt-4o,claude-3-5-sonnet,localhost:1234
 ```
@@ -67,6 +70,7 @@ scenarios:
 ## Architecture
 
 This tool acts as an MCP client that:
+
 1. Connects to your Quick-MCP server
 2. Uses real LLMs to interact with available tools/resources
 3. Validates responses and behavior
